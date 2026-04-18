@@ -10,6 +10,11 @@ const HelpRequestSchema = new mongoose.Schema({
   requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   helpers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   selectedHelper: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  messages: [{
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    text: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 export default mongoose.model('HelpRequest', HelpRequestSchema);

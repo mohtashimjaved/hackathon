@@ -1,10 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'Helplytics | Next-Gen Customer Support Analytics',
-  description: 'A modern, professional platform for managing customer support tickets with advanced analytics.',
+  title: 'Helplytics | Community Support & Skill Sharing',
+  description: 'A modern, professional platform for students to get help and experts to share their skills.',
 };
 
 export default function RootLayout({
@@ -15,12 +16,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="app-container">
-          <Navbar />
-          <main className="main-content">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <div className="app-container">
+            <Navbar />
+            <main className="main-content">
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
