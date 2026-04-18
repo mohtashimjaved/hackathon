@@ -31,7 +31,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function Feed() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,13 +154,15 @@ export default function Feed() {
           <h1 className="heading-lg" style={{ marginBottom: '0.5rem' }}>Community Feed</h1>
           <p className="text-muted">Discover peers who need your expertise, or post your own request.</p>
         </div>
-        <button
-          className="btn btn-primary"
-          style={{ borderRadius: '100px', padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          onClick={() => isAuthenticated ? setShowCreateModal(true) : router.push('/register')}
-        >
-          <Plus size={18} /> Post a Request
-        </button>
+        {(!user || user.role !== 'can_help') && (
+          <button
+            className="btn btn-primary"
+            style={{ borderRadius: '100px', padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            onClick={() => isAuthenticated ? setShowCreateModal(true) : router.push('/register')}
+          >
+            <Plus size={18} /> Post a Request
+          </button>
+        )}
       </div>
 
       {/* Search and filter bar */}
@@ -244,14 +246,16 @@ export default function Feed() {
                       <span style={{ fontWeight: '500', color: '#cbd5e1' }}>{request.requester?.name || 'Anonymous'}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={14} /> {timeAgo(request.createdAt)}</span>
                     </div>
-                    <button
-                      className="btn btn-secondary"
-                      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', gap: '0.5rem', color: 'var(--primary)', borderColor: 'rgba(79, 70, 229, 0.3)', opacity: offerLoadingId === request._id ? 0.6 : 1 }}
-                      onClick={(e) => handleOfferHelp(e, request._id)}
-                      disabled={offerLoadingId === request._id}
-                    >
-                      <HeartHandshake size={16} /> {offerLoadingId === request._id ? 'Sending...' : 'Offer Help'}
-                    </button>
+                    {(!user || user.role !== 'need_help') && (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', gap: '0.5rem', color: 'var(--primary)', borderColor: 'rgba(79, 70, 229, 0.3)', opacity: offerLoadingId === request._id ? 0.6 : 1 }}
+                        onClick={(e) => handleOfferHelp(e, request._id)}
+                        disabled={offerLoadingId === request._id}
+                      >
+                        <HeartHandshake size={16} /> {offerLoadingId === request._id ? 'Sending...' : 'Offer Help'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </Link>
