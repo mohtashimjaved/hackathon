@@ -3,19 +3,9 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Clock, HeartHandshake, TrendingUp, Plus, CheckCircle2 } from 'lucide-react';
-import { getMyRequests } from '@/lib/api';
+import { getMyRequests, getTrends } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-
-const weeklyData = [
-  { name: 'Mon', requests: 12, helpGiven: 8 },
-  { name: 'Tue', requests: 19, helpGiven: 15 },
-  { name: 'Wed', requests: 15, helpGiven: 12 },
-  { name: 'Thu', requests: 22, helpGiven: 18 },
-  { name: 'Fri', requests: 28, helpGiven: 24 },
-  { name: 'Sat', requests: 10, helpGiven: 9 },
-  { name: 'Sun', requests: 8, helpGiven: 8 },
-];
 
 interface MyRequest {
   _id: string;
@@ -26,11 +16,18 @@ interface MyRequest {
   helpers: { _id: string; name: string }[];
 }
 
+interface TrendData {
+  name: string;
+  requests: number;
+  helpGiven: number;
+}
+
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [myRequests, setMyRequests] = useState<MyRequest[]>([]);
   const [helpingRequests, setHelpingRequests] = useState<MyRequest[]>([]);
+  const [trends, setTrends] = useState<TrendData[]>([]);
   const [stats, setStats] = useState({ total: 0, helping: 0, solved: 0 });
 
   useEffect(() => {
@@ -44,9 +41,15 @@ export default function Dashboard() {
   const loadMyData = async () => {
     setLoading(true);
     try {
-      const data = await getMyRequests();
+      const [data, trendData] = await Promise.all([
+        getMyRequests(),
+        getTrends()
+      ]);
+      
       setMyRequests(data.requested || []);
       setHelpingRequests(data.helping || []);
+      setTrends(trendData);
+      
       const solvedCount = (data.requested || []).filter((r: MyRequest) => r.status === 'solved').length;
       setStats({
         total: (data.requested || []).length,
@@ -89,6 +92,9 @@ export default function Dashboard() {
     );
   }
 
+  const showMyRequests = isAuthenticated && user?.role !== 'can_help';
+  const showHelpingOthers = isAuthenticated && user?.role !== 'need_help';
+
   return (
     <div className="container animate-fade-in-up" style={{ padding: '3rem 2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
@@ -100,48 +106,54 @@ export default function Dashboard() {
             {isAuthenticated ? 'Your personal dashboard and activity overview.' : 'Monitor community activity and impact metrics.'}
           </p>
         </div>
-        <Link href="/feed">
-          <button className="btn btn-primary" style={{ display: 'flex', gap: '0.5rem' }}>
-            <Plus size={18} /> New Request
-          </button>
-        </Link>
+        {showMyRequests && (
+          <Link href="/feed">
+            <button className="btn btn-primary" style={{ display: 'flex', gap: '0.5rem' }}>
+              <Plus size={18} /> New Request
+            </button>
+          </Link>
+        )}
       </div>
       
       {/* Stats Cards */}
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '3rem' }}>
-        <div className="glass-card delay-100" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
-          <div style={{ padding: '1.25rem', borderRadius: '16px', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', boxShadow: 'inset 0 0 0 1px rgba(79, 70, 229, 0.2)' }}>
-            <Activity size={32} />
+        {showMyRequests && (
+          <div className="glass-card delay-100" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+            <div style={{ padding: '1.25rem', borderRadius: '16px', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--primary)', boxShadow: 'inset 0 0 0 1px rgba(79, 70, 229, 0.2)' }}>
+              <Activity size={32} />
+            </div>
+            <div>
+              <p className="text-muted" style={{ fontWeight: '500', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                My Requests
+              </p>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: '800', fontFamily: 'var(--font-heading)', color: '#fff' }}>
+                {stats.total}
+              </h2>
+              <p style={{ color: 'var(--success)', fontSize: '0.85rem', fontWeight: '600' }}>
+                {stats.solved} solved
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-muted" style={{ fontWeight: '500', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {isAuthenticated ? 'My Requests' : 'Community Requests'}
-            </p>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', fontFamily: 'var(--font-heading)', color: '#fff' }}>
-              {isAuthenticated ? stats.total : '1,284'}
-            </h2>
-            <p style={{ color: 'var(--success)', fontSize: '0.85rem', fontWeight: '600' }}>
-              {isAuthenticated ? `${stats.solved} solved` : '+12% this week'}
-            </p>
-          </div>
-        </div>
+        )}
 
-        <div className="glass-card delay-200" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
-          <div style={{ padding: '1.25rem', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', boxShadow: 'inset 0 0 0 1px rgba(16, 185, 129, 0.2)' }}>
-            <HeartHandshake size={32} />
+        {showHelpingOthers && (
+          <div className="glass-card delay-200" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+            <div style={{ padding: '1.25rem', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', boxShadow: 'inset 0 0 0 1px rgba(16, 185, 129, 0.2)' }}>
+              <HeartHandshake size={32} />
+            </div>
+            <div>
+              <p className="text-muted" style={{ fontWeight: '500', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Helping Others
+              </p>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: '800', fontFamily: 'var(--font-heading)', color: '#fff' }}>
+                {stats.helping}
+              </h2>
+              <p style={{ color: 'var(--success)', fontSize: '0.85rem', fontWeight: '600' }}>
+                active contributions
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-muted" style={{ fontWeight: '500', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {isAuthenticated ? 'Helping Others' : 'Help Offers'}
-            </p>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', fontFamily: 'var(--font-heading)', color: '#fff' }}>
-              {isAuthenticated ? stats.helping : '1,102'}
-            </h2>
-            <p style={{ color: 'var(--success)', fontSize: '0.85rem', fontWeight: '600' }}>
-              {isAuthenticated ? 'active contributions' : '85% match rate'}
-            </p>
-          </div>
-        </div>
+        )}
 
         <div className="glass-card delay-300" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
           <div style={{ padding: '1.25rem', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', boxShadow: 'inset 0 0 0 1px rgba(245, 158, 11, 0.2)' }}>
@@ -161,9 +173,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* My Requests List (only when authenticated) */}
-      {isAuthenticated && (myRequests.length > 0 || helpingRequests.length > 0) && (
-        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
+      {/* Lists */}
+      <div className="grid" style={{ gridTemplateColumns: showMyRequests && showHelpingOthers ? '1fr 1fr' : '1fr', gap: '2rem', marginBottom: '3rem' }}>
+        {showMyRequests && (
           <div className="glass-card" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.3rem', fontWeight: '700', fontFamily: 'var(--font-heading)', marginBottom: '1.5rem' }}>My Requests</h3>
             {myRequests.length === 0 ? (
@@ -190,6 +202,9 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        )}
+        
+        {showHelpingOthers && (
           <div className="glass-card" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.3rem', fontWeight: '700', fontFamily: 'var(--font-heading)', marginBottom: '1.5rem' }}>Helping Others</h3>
             {helpingRequests.length === 0 ? (
@@ -207,8 +222,8 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Chart */}
       <div className="glass-card delay-300" style={{ padding: '2.5rem' }}>
@@ -225,7 +240,7 @@ export default function Dashboard() {
         </div>
         <div style={{ width: '100%', height: '350px' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4}/>

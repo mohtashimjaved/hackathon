@@ -28,13 +28,6 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/users', userRoutes);
 
 
-
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

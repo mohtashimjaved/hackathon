@@ -136,3 +136,7 @@ export async function getLeaderboard() {
 export async function getUserProfile(id: string) {
   return request(`/users/${id}`);
 }
+
+export async function getTrends() {
+  return request('/requests/stats/trends');
+}

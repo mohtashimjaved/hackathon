@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Filter, HeartHandshake, Clock, Tag, Plus, X, AlertCircle } from 'lucide-react';
 import { getRequests, createRequest, offerHelp } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 
 interface HelpRequest {
   _id: string;
@@ -32,6 +33,7 @@ function timeAgo(dateStr: string): string {
 
 export default function Feed() {
   const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,10 +110,11 @@ export default function Feed() {
       });
       setShowCreateModal(false);
       setCreateData({ title: '', description: '', category: 'Frontend', tags: '', urgency: 'medium' });
+      showToast('Request published successfully!', 'success');
       await loadRequests();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create request';
-      alert(message);
+      showToast(message, 'error');
     } finally {
       setCreating(false);
     }
@@ -128,11 +131,11 @@ export default function Feed() {
     setOfferLoadingId(requestId);
     try {
       await offerHelp(requestId);
-      alert('Help offer sent! The requester will be notified.');
+      showToast('Help offer sent! The requester will be notified.', 'success');
       await loadRequests();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to offer help';
-      alert(message);
+      showToast(message, 'error');
     } finally {
       setOfferLoadingId(null);
     }
