@@ -144,93 +144,93 @@ const router = express.Router();
 //   }
 // });
 
-// Offer help on a request
-router.post('/:id/offer-help', authMiddleware, async (req, res) => {
-  try {
-    // Check if user is allowed to offer help
-    if (req.user.role === 'need_help') {
-      return res.status(403).json({ msg: 'Your account type only allows creating requests, not offering help.' });
-    }
+// // Offer help on a request
+// router.post('/:id/offer-help', authMiddleware, async (req, res) => {
+//   try {
+//     // Check if user is allowed to offer help
+//     if (req.user.role === 'need_help') {
+//       return res.status(403).json({ msg: 'Your account type only allows creating requests, not offering help.' });
+//     }
 
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ msg: 'Invalid request ID' });
-    }
+//     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+//       return res.status(400).json({ msg: 'Invalid request ID' });
+//     }
 
-    let helpRequest = await HelpRequest.findById(req.params.id);
-    if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
+//     let helpRequest = await HelpRequest.findById(req.params.id);
+//     if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
 
-    if (helpRequest.status === 'solved') {
-      return res.status(400).json({ msg: 'This request is already solved' });
-    }
+//     if (helpRequest.status === 'solved') {
+//       return res.status(400).json({ msg: 'This request is already solved' });
+//     }
 
-    if (helpRequest.requester.toString() === req.user.id) {
-      return res.status(400).json({ msg: 'You cannot offer help on your own request' });
-    }
+//     if (helpRequest.requester.toString() === req.user.id) {
+//       return res.status(400).json({ msg: 'You cannot offer help on your own request' });
+//     }
 
-    // Check if already offered help (compare ObjectIds properly)
-    const alreadyHelper = helpRequest.helpers.some(
-      h => h.toString() === req.user.id
-    );
-    if (alreadyHelper) {
-      return res.status(400).json({ msg: 'You have already offered help on this request' });
-    }
+//     // Check if already offered help (compare ObjectIds properly)
+//     const alreadyHelper = helpRequest.helpers.some(
+//       h => h.toString() === req.user.id
+//     );
+//     if (alreadyHelper) {
+//       return res.status(400).json({ msg: 'You have already offered help on this request' });
+//     }
 
-    helpRequest.helpers.push(req.user.id);
-    if (helpRequest.status === 'open') {
-      helpRequest.status = 'in-progress';
-    }
-    await helpRequest.save();
+//     helpRequest.helpers.push(req.user.id);
+//     if (helpRequest.status === 'open') {
+//       helpRequest.status = 'in-progress';
+//     }
+//     await helpRequest.save();
 
-    // Return populated version so frontend gets helper names
-    const populated = await HelpRequest.findById(helpRequest._id)
-      .populate('requester', ['name', 'skills', 'trustScore'])
-      .populate('helpers', ['name', 'trustScore']);
+//     // Return populated version so frontend gets helper names
+//     const populated = await HelpRequest.findById(helpRequest._id)
+//       .populate('requester', ['name', 'skills', 'trustScore'])
+//       .populate('helpers', ['name', 'trustScore']);
 
-    res.json(populated);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+//     res.json(populated);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
-// Mark as solved
-router.post('/:id/solve', authMiddleware, async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ msg: 'Invalid request ID' });
-    }
+// // Mark as solved
+// router.post('/:id/solve', authMiddleware, async (req, res) => {
+//   try {
+//     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+//       return res.status(400).json({ msg: 'Invalid request ID' });
+//     }
 
-    const { helperId } = req.body;
-    let helpRequest = await HelpRequest.findById(req.params.id);
-    if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
+//     const { helperId } = req.body;
+//     let helpRequest = await HelpRequest.findById(req.params.id);
+//     if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
 
-    if (helpRequest.requester.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'Only the requester can mark this as solved' });
-    }
+//     if (helpRequest.requester.toString() !== req.user.id) {
+//       return res.status(401).json({ msg: 'Only the requester can mark this as solved' });
+//     }
 
-    if (helpRequest.status === 'solved') {
-      return res.status(400).json({ msg: 'Already marked as solved' });
-    }
+//     if (helpRequest.status === 'solved') {
+//       return res.status(400).json({ msg: 'Already marked as solved' });
+//     }
 
-    helpRequest.status = 'solved';
-    if (helperId && mongoose.Types.ObjectId.isValid(helperId)) {
-      helpRequest.selectedHelper = helperId;
-      // Increment trust score for the helper who solved it
-      await User.findByIdAndUpdate(helperId, { $inc: { trustScore: 10 } });
-    }
-    await helpRequest.save();
+//     helpRequest.status = 'solved';
+//     if (helperId && mongoose.Types.ObjectId.isValid(helperId)) {
+//       helpRequest.selectedHelper = helperId;
+//       // Increment trust score for the helper who solved it
+//       await User.findByIdAndUpdate(helperId, { $inc: { trustScore: 10 } });
+//     }
+//     await helpRequest.save();
 
-    const populated = await HelpRequest.findById(helpRequest._id)
-      .populate('requester', ['name', 'skills', 'trustScore'])
-      .populate('helpers', ['name', 'trustScore'])
-      .populate('selectedHelper', ['name', 'trustScore']);
+//     const populated = await HelpRequest.findById(helpRequest._id)
+//       .populate('requester', ['name', 'skills', 'trustScore'])
+//       .populate('helpers', ['name', 'trustScore'])
+//       .populate('selectedHelper', ['name', 'trustScore']);
 
-    res.json(populated);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+//     res.json(populated);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
 // Add message to a request
 router.post('/:id/messages', authMiddleware, async (req, res) => {
