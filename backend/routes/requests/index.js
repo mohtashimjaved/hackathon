@@ -7,6 +7,7 @@ import getUsersRequests from "./getUsersRequests.js";
 import getSingleRequestDetail from "./getSingleRequestDetail.js";
 import offerHelp from "./offerHelp.js";
 import markSolved from "./markSolved.js";
+import messageOnRequest from "./messageOnRequest.js";
 
 const router = express.Router();
 
@@ -17,6 +18,8 @@ router.get('/me', tokenVerification, getUsersRequests);
 router.get('/:id', getSingleRequestDetail);
 router.post('/:id/offer-help', tokenVerification, offerHelp);
 router.post('/:id/solve', tokenVerification, markSolved);
+router.post('/:id/messages', tokenVerification, messageOnRequest)
+
 
 
 export default router;

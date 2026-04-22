@@ -1,3 +1,6 @@
+import mongoose from "mongoose";
+import HelpRequest from "../../models/HelpRequest.js";
+
 // Offer help on a request
 const offerHelp = async (req, res) => {
   try {

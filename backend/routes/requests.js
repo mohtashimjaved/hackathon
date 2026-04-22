@@ -1,10 +1,10 @@
-import express from 'express';
-import HelpRequest from '../models/HelpRequest.js';
-import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
+// import express from 'express';
+// import HelpRequest from '../models/HelpRequest.js';
+// import User from '../models/User.js';
+// import jwt from 'jsonwebtoken';
+// import mongoose from 'mongoose';
 
-const router = express.Router();
+// const router = express.Router();
 
 // const authMiddleware = (req, res, next) => {
 //   const token = req.header('x-auth-token');
@@ -232,30 +232,30 @@ const router = express.Router();
 //   }
 // });
 
-// Add message to a request
-router.post('/:id/messages', authMiddleware, async (req, res) => {
-  try {
-    const { text } = req.body;
-    if (!text) return res.status(400).json({ msg: 'Message text is required' });
+// // Add message to a request
+// router.post('/:id/messages', authMiddleware, async (req, res) => {
+//   try {
+//     const { text } = req.body;
+//     if (!text) return res.status(400).json({ msg: 'Message text is required' });
 
-    let helpRequest = await HelpRequest.findById(req.params.id);
-    if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
+//     let helpRequest = await HelpRequest.findById(req.params.id);
+//     if (!helpRequest) return res.status(404).json({ msg: 'Request not found' });
 
-    helpRequest.messages.push({
-      sender: req.user.id,
-      text
-    });
+//     helpRequest.messages.push({
+//       sender: req.user.id,
+//       text
+//     });
 
-    await helpRequest.save();
+//     await helpRequest.save();
     
-    const populated = await HelpRequest.findById(helpRequest._id)
-      .populate('messages.sender', ['name']);
+//     const populated = await HelpRequest.findById(helpRequest._id)
+//       .populate('messages.sender', ['name']);
     
-    res.json(populated.messages);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+//     res.json(populated.messages);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
-export default router;
+// export default router;

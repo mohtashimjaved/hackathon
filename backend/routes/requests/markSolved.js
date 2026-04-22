@@ -1,3 +1,7 @@
+import mongoose from "mongoose";
+import HelpRequest from "../../models/HelpRequest.js";
+import User from "../../models/User.js";
+
 // Mark as solved
 const markSolved = async (req, res) => {
   try {
