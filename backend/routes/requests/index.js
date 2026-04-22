@@ -20,6 +20,4 @@ router.post('/:id/offer-help', tokenVerification, offerHelp);
 router.post('/:id/solve', tokenVerification, markSolved);
 router.post('/:id/messages', tokenVerification, messageOnRequest);
 
-
-
 export default router;
