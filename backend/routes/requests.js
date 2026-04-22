@@ -109,40 +109,40 @@ const router = express.Router();
 //   }
 // });
 
-// Get user's requests (Dashboard)
-router.get('/me', authMiddleware, async (req, res) => {
-  try {
-    const requested = await HelpRequest.find({ requester: req.user.id })
-      .populate('helpers', ['name', 'trustScore'])
-      .sort({ createdAt: -1 });
-    const helping = await HelpRequest.find({ helpers: { $in: [req.user.id] } })
-      .populate('requester', ['name'])
-      .sort({ createdAt: -1 });
-    res.json({ requested, helping });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+// // Get user's requests (Dashboard)
+// router.get('/me', authMiddleware, async (req, res) => {
+//   try {
+//     const requested = await HelpRequest.find({ requester: req.user.id })
+//       .populate('helpers', ['name', 'trustScore'])
+//       .sort({ createdAt: -1 });
+//     const helping = await HelpRequest.find({ helpers: { $in: [req.user.id] } })
+//       .populate('requester', ['name'])
+//       .sort({ createdAt: -1 });
+//     res.json({ requested, helping });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
-// Get single request detail
-router.get('/:id', async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ msg: 'Invalid request ID' });
-    }
-    const request = await HelpRequest.findById(req.params.id)
-      .populate('requester', ['name', 'skills', 'trustScore'])
-      .populate('helpers', ['name', 'trustScore'])
-      .populate('selectedHelper', ['name', 'trustScore'])
-      .populate('messages.sender', ['name']);
-    if (!request) return res.status(404).json({ msg: 'Request not found' });
-    res.json(request);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+// // Get single request detail
+// router.get('/:id', async (req, res) => {
+//   try {
+//     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+//       return res.status(400).json({ msg: 'Invalid request ID' });
+//     }
+//     const request = await HelpRequest.findById(req.params.id)
+//       .populate('requester', ['name', 'skills', 'trustScore'])
+//       .populate('helpers', ['name', 'trustScore'])
+//       .populate('selectedHelper', ['name', 'trustScore'])
+//       .populate('messages.sender', ['name']);
+//     if (!request) return res.status(404).json({ msg: 'Request not found' });
+//     res.json(request);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
 // Offer help on a request
 router.post('/:id/offer-help', authMiddleware, async (req, res) => {
