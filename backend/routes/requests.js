@@ -6,81 +6,81 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
-const authMiddleware = (req, res, next) => {
-  const token = req.header('x-auth-token');
-  if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    req.user = decoded.user;
-    next();
-  } catch (err) {
-    res.status(401).json({ msg: 'Token is not valid' });
-  }
-};
+// const authMiddleware = (req, res, next) => {
+//   const token = req.header('x-auth-token');
+//   if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+//     req.user = decoded.user;
+//     next();
+//   } catch (err) {
+//     res.status(401).json({ msg: 'Token is not valid' });
+//   }
+// };
 
-// Get personalized stats for trends
-router.get('/stats/trends', authMiddleware, async (req, res) => {
-  try {
-    const days = 7;
-    const trends = [];
-    const now = new Date();
+// // Get personalized stats for trends
+// router.get('/stats/trends', authMiddleware, async (req, res) => {
+//   try {
+//     const days = 7;
+//     const trends = [];
+//     const now = new Date();
     
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
+//     for (let i = days - 1; i >= 0; i--) {
+//       const date = new Date(now);
+//       date.setDate(date.getDate() - i);
+//       date.setHours(0, 0, 0, 0);
       
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
+//       const nextDate = new Date(date);
+//       nextDate.setDate(nextDate.getDate() + 1);
 
-      // Count only user's requests
-      const requestCount = await HelpRequest.countDocuments({
-        requester: req.user.id,
-        createdAt: { $gte: date, $lt: nextDate }
-      });
+//       // Count only user's requests
+//       const requestCount = await HelpRequest.countDocuments({
+//         requester: req.user.id,
+//         createdAt: { $gte: date, $lt: nextDate }
+//       });
 
-      // Count user's help contributions (where they are in the helpers list and activity happened)
-      const helpCount = await HelpRequest.countDocuments({
-        helpers: { $in: [req.user.id] },
-        updatedAt: { $gte: date, $lt: nextDate }
-      });
+//       // Count user's help contributions (where they are in the helpers list and activity happened)
+//       const helpCount = await HelpRequest.countDocuments({
+//         helpers: { $in: [req.user.id] },
+//         updatedAt: { $gte: date, $lt: nextDate }
+//       });
 
-      trends.push({
-        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        requests: requestCount,
-        helpGiven: helpCount
-      });
-    }
+//       trends.push({
+//         name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+//         requests: requestCount,
+//         helpGiven: helpCount
+//       });
+//     }
     
-    res.json(trends);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+//     res.json(trends);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
-// Create a new help request
-router.post('/', authMiddleware, async (req, res) => {
-  try {
-    // Check if user is allowed to create requests
-    if (req.user.role === 'can_help') {
-      return res.status(403).json({ msg: 'Your account type only allows offering help, not creating requests.' });
-    }
+// // Create a new help request
+// router.post('/', authMiddleware, async (req, res) => {
+//   try {
+//     // Check if user is allowed to create requests
+//     if (req.user.role === 'can_help') {
+//       return res.status(403).json({ msg: 'Your account type only allows offering help, not creating requests.' });
+//     }
 
-    const { title, description, category, tags, urgency } = req.body;
-    const newRequest = new HelpRequest({
-      title, description, category, tags, urgency,
-      requester: req.user.id
-    });
-    const request = await newRequest.save();
-    const populated = await HelpRequest.findById(request._id)
-      .populate('requester', ['name', 'trustScore']);
-    res.json(populated);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-});
+//     const { title, description, category, tags, urgency } = req.body;
+//     const newRequest = new HelpRequest({
+//       title, description, category, tags, urgency,
+//       requester: req.user.id
+//     });
+//     const request = await newRequest.save();
+//     const populated = await HelpRequest.findById(request._id)
+//       .populate('requester', ['name', 'trustScore']);
+//     res.json(populated);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Server Error' });
+//   }
+// });
 
 // Get all open/in-progress requests (Feed)
 router.get('/', async (req, res) => {

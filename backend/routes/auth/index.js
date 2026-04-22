@@ -1,8 +1,8 @@
 import express from "express"
-import tokenVerification from "../../config/tokenVerification";
-import accessVerification from "./accessVerification";
-import register from "./register";
-import login from "./login";
+import tokenVerification from "../../config/tokenVerification.js";
+import accessVerification from "./accessVerification.js";
+import register from "./register.js";
+import login from "./login.js";
 
 const router = express.Router()
 
