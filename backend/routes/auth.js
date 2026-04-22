@@ -1,9 +1,9 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+// import express from 'express';
+// import bcrypt from 'bcryptjs';
+// import jwt from 'jsonwebtoken';
+// import User from '../models/User.js';
 
-const router = express.Router();
+// const router = express.Router();
 
 // const authMiddleware = (req, res, next) => {
 //   const token = req.header('x-auth-token');
@@ -78,4 +78,4 @@ const router = express.Router();
 //   }
 // });
 
-export default router;
+// export default router;
