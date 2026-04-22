@@ -1,5 +1,7 @@
+import User from "../../models/User.js";
+
 // Get Leaderboard
-router.get('/leaderboard', async (req, res) => {
+const getLeaderboard = async (req, res) => {
   try {
     const users = await User.find()
       .sort({ trustScore: -1 })
@@ -9,4 +11,6 @@ router.get('/leaderboard', async (req, res) => {
   } catch (err) {
     res.status(500).send('Server Error');
   }
-});
+};
+
+export default getLeaderboard;
