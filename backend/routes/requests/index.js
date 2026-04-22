@@ -18,7 +18,7 @@ router.get('/me', tokenVerification, getUsersRequests);
 router.get('/:id', getSingleRequestDetail);
 router.post('/:id/offer-help', tokenVerification, offerHelp);
 router.post('/:id/solve', tokenVerification, markSolved);
-router.post('/:id/messages', tokenVerification, messageOnRequest)
+router.post('/:id/messages', tokenVerification, messageOnRequest);
 
 
 
