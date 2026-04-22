@@ -1,5 +1,7 @@
+import HelpRequest from "../../models/HelpRequest.js";
+
 // Get all open/in-progress requests (Feed)
-router.get('/', async (req, res) => {
+const getOpenRequests = async (req, res) => {
   try {
     const { category, urgency, tag, search } = req.query;
     let query = { status: { $in: ['open', 'in-progress'] } };
@@ -21,6 +23,8 @@ router.get('/', async (req, res) => {
     res.json(requests);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ message: 'Server Error' });
   }
-});
+};
+
+export default getOpenRequests;
