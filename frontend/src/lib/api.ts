@@ -1,12 +1,13 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+import { getCookie, setCookie, removeCookie } from './cookies';
+
 // Helper to get stored token
 function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
+  return getCookie('token');
 }
 
-// Generic fetch wrapper
+// Generic fetch wrapper with Next.js 16 caching
 async function request(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -20,6 +21,11 @@ async function request(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers,
+    // Latest Next.js 16 caching strategy
+    next: {
+      revalidate: options.method === 'GET' ? 60 : 0, // Cache for 60s on GET, no cache on others
+      ...(options as any).next,
+    }
   });
 
   const data = await res.json();
@@ -35,8 +41,11 @@ export async function loginUser(email: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
+  
+  // Set cookies for proxy file access
+  setCookie('token', data.token);
+  setCookie('user', JSON.stringify(data.user));
+  
   return data;
 }
 
@@ -53,8 +62,10 @@ export async function registerUser(payload: {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
+  
+  setCookie('token', data.token);
+  setCookie('user', JSON.stringify(data.user));
+  
   return data;
 }
 
@@ -63,14 +74,13 @@ export async function fetchMe() {
 }
 
 export function logoutUser() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  removeCookie('token');
+  removeCookie('user');
 }
 
 export function getCurrentUser() {
-  if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem('user');
-  return raw ? JSON.parse(raw) : null;
+  const raw = getCookie('user');
+  return raw ? JSON.parse(decodeURIComponent(raw)) : null;
 }
 
 export function isLoggedIn(): boolean {

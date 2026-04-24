@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             trustScore: freshUser.trustScore
           };
           setUser(mappedUser);
-          localStorage.setItem('user', JSON.stringify(mappedUser));
         } catch (err) {
           console.error('Failed to refresh user session', err);
         }
@@ -104,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         trustScore: freshUser.trustScore
       };
       setUser(mappedUser);
-      localStorage.setItem('user', JSON.stringify(mappedUser));
     } catch (err) {
       console.error('Refresh user failed', err);
     }
