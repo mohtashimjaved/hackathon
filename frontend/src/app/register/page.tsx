@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { AlertCircle, User, Mail, Lock, Globe, Briefcase, Heart } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function Register() {
   const router = useRouter();
@@ -37,7 +37,6 @@ export default function Register() {
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    if (!formData.role) newErrors.role = 'Please select a role';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -46,14 +45,6 @@ export default function Register() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -79,147 +70,114 @@ export default function Register() {
   };
 
   return (
-    <div className="container animate-fade-in-up" style={{ padding: '4rem 2rem', display: 'flex', justifyContent: 'center' }}>
-      <div className="glass-card" style={{ width: '100%', maxWidth: '700px', padding: '3.5rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h1 className="heading-lg" style={{ marginBottom: '0.5rem' }}>Join the Community</h1>
-          <p className="text-muted">Create your profile to start getting and offering help.</p>
+    <div className="container animate-fade-in" style={{ padding: '4rem 2rem', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', width: '100%', maxWidth: '1100px' }}>
+        
+        {/* Left: Info Card */}
+        <div className="banner-card" style={{ padding: '4rem 3.5rem', marginBottom: 0, height: '100%' }}>
+          <span className="banner-label">Community Access</span>
+          <h1>Enter the support network.</h1>
+          <p style={{ marginBottom: '3rem' }}>
+            Choose a demo identity, set your role, and jump into a multi-page product flow designed for asking, offering, and tracking help with a premium interface.
+          </p>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1.5rem', opacity: 0.9 }}>
+            {[
+              'Role-based entry for Need Help, Can Help, or Both',
+              'Direct path into dashboard, requests, AI Center, and community feed',
+              'Persistent demo session powered by Cookies'
+            ].map((item, i) => (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)', marginTop: '0.6rem' }}></div>
+                <span style={{ fontSize: '1rem' }}>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {serverError && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--danger)', fontSize: '0.95rem' }}>
-            <AlertCircle size={20} /> {serverError}
-          </div>
-        )}
-        
-        <form onSubmit={handleRegister} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          {/* Full Name */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <User size={18} /> Full Name
-            </label>
-            <input 
-              name="name"
-              type="text" 
-              className={`form-input ${errors.name ? 'border-danger' : ''}`} 
-              placeholder="Enter your full name" 
-              value={formData.name} 
-              onChange={handleChange}
-            />
-            {errors.name && <span className="form-error"><AlertCircle size={14} /> {errors.name}</span>}
+        {/* Right: Register Form */}
+        <div className="card" style={{ padding: '3.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <span className="banner-label" style={{ color: 'var(--primary)', opacity: 1 }}>Sign up</span>
+            <h2 className="heading-lg">Authenticate your community profile</h2>
           </div>
 
-          {/* Email */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Mail size={18} /> Email Address
-            </label>
-            <input 
-              name="email"
-              type="email" 
-              className={`form-input ${errors.email ? 'border-danger' : ''}`} 
-              placeholder="john@example.com" 
-              value={formData.email} 
-              onChange={handleChange}
-            />
-            {errors.email && <span className="form-error"><AlertCircle size={14} /> {errors.email}</span>}
-          </div>
+          {serverError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
+              <AlertCircle size={18} /> {serverError}
+            </div>
+          )}
 
-          {/* Password */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Lock size={18} /> Password
-            </label>
-            <input 
-              name="password"
-              type="password" 
-              className={`form-input ${errors.password ? 'border-danger' : ''}`} 
-              placeholder="Min 6 characters" 
-              value={formData.password} 
-              onChange={handleChange}
-            />
-            {errors.password && <span className="form-error"><AlertCircle size={14} /> {errors.password}</span>}
-          </div>
-          
-          {/* Role Dropdown */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Briefcase size={18} /> Your Goal
-            </label>
-            <select 
-              name="role"
-              className={`form-input form-select ${errors.role ? 'border-danger' : ''}`} 
-              value={formData.role} 
-              onChange={handleChange}
+          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label className="form-label">Full Name</label>
+              <input 
+                name="name"
+                className="form-input" 
+                placeholder="Ayesha Khan" 
+                value={formData.name} 
+                onChange={handleChange}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label className="form-label">Email</label>
+                <input
+                  name="email"
+                  className="form-input"
+                  placeholder="community@helphub.ai"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="form-label">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  className="form-input"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Role Selection</label>
+              <select name="role" className="form-input" value={formData.role} onChange={handleChange}>
+                <option value="both">Both (Need help & Can help)</option>
+                <option value="need_help">I need help with projects</option>
+                <option value="can_help">I want to help others</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="form-label">Skills (comma separated)</label>
+              <input 
+                name="skills"
+                className="form-input" 
+                placeholder="React, Figma, Git/GitHub" 
+                value={formData.skills} 
+                onChange={handleChange}
+              />
+            </div>
+
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', padding: '1.25rem', marginTop: '1rem', opacity: loading ? 0.7 : 1 }} 
+              type="submit"
+              disabled={loading}
             >
-              <option value="both">Get Help &amp; Offer Help</option>
-              <option value="need_help">I need help with projects</option>
-              <option value="can_help">I want to help others</option>
-            </select>
-            {errors.role && <span className="form-error"><AlertCircle size={14} /> {errors.role}</span>}
-          </div>
+              {loading ? 'Creating profile...' : 'Continue to dashboard'}
+            </button>
+          </form>
 
-          {/* Skills */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Briefcase size={18} /> Skills (comma separated)
-            </label>
-            <input 
-              name="skills"
-              type="text" 
-              className="form-input" 
-              placeholder="React, Python, UI Design..." 
-              value={formData.skills} 
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Interests */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Heart size={18} /> Interests
-            </label>
-            <input 
-              name="interests"
-              type="text" 
-              className="form-input" 
-              placeholder="AI, Web3, Photography..." 
-              value={formData.interests} 
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Location */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Globe size={18} /> Location
-            </label>
-            <input 
-              name="location"
-              type="text" 
-              className="form-input" 
-              placeholder="City, Country" 
-              value={formData.location} 
-              onChange={handleChange}
-            />
-          </div>
-
-          <button 
-            className="btn btn-primary" 
-            style={{ gridColumn: 'span 2', marginTop: '1.5rem', padding: '1.25rem', opacity: loading ? 0.7 : 1 }} 
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Creating Account...' : 'Create My Account'}
-          </button>
-        </form>
-        <p style={{ textAlign: 'center', marginTop: '2.5rem', color: '#94a3b8' }}>
-          Already have an account? <Link href="/login" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'underline' }}>Sign In</Link>
-        </p>
+          <p style={{ textAlign: 'center', marginTop: '2rem', color: '#64748b', fontSize: '0.9rem' }}>
+            Already have an account? <Link href="/login" style={{ color: 'var(--primary)', fontWeight: '700' }}>Login here</Link>
+          </p>
+        </div>
       </div>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .border-danger { border-color: var(--danger) !important; }
-      `}} />
     </div>
   );
 }
