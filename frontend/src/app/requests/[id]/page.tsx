@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { HeartHandshake, CheckCircle2, MessageSquare, Clock, Tag, ArrowLeft, Send, MapPin, User } from 'lucide-react';
+import { HeartHandshake, CheckCircle2, MessageSquare, Clock, Tag, ArrowLeft, Send, User } from 'lucide-react';
 import { getRequestById, offerHelp, markSolved, addMessage } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -57,6 +57,7 @@ export default function RequestDetail() {
   const [message, setMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [offeringHelp, setOfferingHelp] = useState(false);
+  const [solving, setSolving] = useState(false);
 
   useEffect(() => {
     loadRequest();
@@ -97,6 +98,7 @@ export default function RequestDetail() {
       router.push('/login');
       return;
     }
+    setSolving(true);
     try {
       await markSolved(id, helperId);
       showToast('Request marked as solved! Trust scores updated.', 'success');
@@ -105,6 +107,8 @@ export default function RequestDetail() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to mark as solved';
       showToast(msg, 'error');
+    } finally {
+      setSolving(false);
     }
   };
 
@@ -119,7 +123,7 @@ export default function RequestDetail() {
     try {
       await addMessage(id, message);
       setMessage('');
-      await loadRequest();
+      await loadRequest(); // Reload to get new messages
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to send message';
       showToast(msg, 'error');
@@ -128,91 +132,118 @@ export default function RequestDetail() {
     }
   };
 
-  if (loading) return <div className="container" style={{ padding: '5rem' }}><div className="card skeleton" style={{ height: '400px' }}></div></div>;
-  if (!request) return <div className="container" style={{ padding: '5rem', textAlign: 'center' }}>Request not found.</div>;
+  if (loading) {
+    return (
+      <div className="container" style={{ padding: '3rem 2rem' }}>
+        <div className="skeleton" style={{ width: '100px', height: '20px', marginBottom: '2rem' }}></div>
+        <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className="glass-card skeleton" style={{ height: '300px' }}></div>
+            <div className="glass-card skeleton" style={{ height: '400px' }}></div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className="glass-card skeleton" style={{ height: '150px' }}></div>
+            <div className="glass-card skeleton" style={{ height: '250px' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!request) return <div className="container" style={{ padding: '3rem 2rem', textAlign: 'center' }}>Request not found.</div>;
 
   const isOwner = user?.id === request.requester?._id;
 
   return (
-    <div className="container animate-fade-in" style={{ padding: '2rem' }}>
-      
-      <Link href="/feed" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontWeight: '600', marginBottom: '2rem' }}>
-        <ArrowLeft size={18} /> Back to feed
+    <div className="container animate-fade-in-up" style={{ padding: '3rem 2rem' }}>
+      <Link href="/feed" className="btn-back" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', textDecoration: 'none', marginBottom: '2rem', width: 'fit-content' }}>
+        <ArrowLeft size={18} /> Back to Feed
       </Link>
 
-      <div className="banner-card">
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <span className="badge badge-teal" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{request.category}</span>
-          <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{request.urgency} Urgency</span>
-        </div>
-        <h1>{request.title}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginTop: '2rem', opacity: 0.8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <User size={18} /> {request.requester?.name}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MapPin size={18} /> Karachi
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Clock size={18} /> {timeAgo(request.createdAt)}
-          </div>
-        </div>
-      </div>
+      <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '2.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Main Content */}
+          <div className="glass-card" style={{ padding: '2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <h1 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.2rem' }}>{request.title}</h1>
+              <span className="badge" style={{ 
+                background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(79, 70, 229, 0.1)',
+                color: request.urgency === 'critical' ? 'var(--danger)' : 'var(--primary)',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                {request.urgency.toUpperCase()}
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={14} />
+                </div>
+                <span style={{ color: '#fff', fontWeight: '500' }}>{request.requester?.name}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={16} /> {timeAgo(request.createdAt)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Tag size={16} /> {request.category}</div>
+            </div>
 
-      <div className="grid" style={{ gridTemplateColumns: '1fr 380px', gap: '3rem', alignItems: 'start' }}>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-          {/* Details */}
-          <div className="card" style={{ padding: '3rem' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1.5rem' }}>Request details</h2>
-            <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#4b5563', whiteSpace: 'pre-wrap', marginBottom: '2.5rem' }}>
+            <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#e2e8f0', marginBottom: '2rem' }}>
               {request.description}
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               {request.tags.map(tag => (
-                <span key={tag} className="badge" style={{ background: 'rgba(0,0,0,0.03)', color: '#64748b', padding: '0.4rem 1rem' }}>{tag}</span>
+                <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.4rem 1rem', borderRadius: '100px' }}>
+                  <Tag size={12} /> {tag}
+                </span>
               ))}
             </div>
           </div>
 
           {/* Discussion */}
-          <div className="card" style={{ padding: '3rem' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <MessageSquare size={24} /> Discussion
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
+          <div className="glass-card">
+            <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <MessageSquare size={20} /> Discussion ({request.messages?.length || 0})
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
               {request.messages?.map((msg) => (
-                <div key={msg._id} style={{ display: 'flex', gap: '1.5rem' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {msg.sender?.name.charAt(0)}
+                <div key={msg._id} style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <User size={20} />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '0 12px 12px 12px', flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: '700' }}>{msg.sender?.name}</span>
-                      <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{timeAgo(msg.createdAt)}</span>
+                      <span style={{ fontWeight: '600', color: '#fff' }}>{msg.sender?.name}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{timeAgo(msg.createdAt)}</span>
                     </div>
-                    <p style={{ color: '#4b5563', lineHeight: '1.6' }}>{msg.text}</p>
+                    <p style={{ color: '#cbd5e1' }}>{msg.text}</p>
                   </div>
                 </div>
               ))}
               {(!request.messages || request.messages.length === 0) && (
-                <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No messages yet. Be the first to start the conversation!</p>
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  No messages yet. Start the conversation!
+                </div>
               )}
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="Type your reply here..." 
-                value={message} 
+              <input
+                type="text"
+                className="form-input"
+                placeholder={isAuthenticated ? 'Type your message...' : 'Sign in to message...'}
+                style={{ flex: 1 }}
+                value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               />
-              <button className="btn btn-primary" style={{ padding: '0 2rem' }} onClick={handleSendMessage} disabled={sendingMessage || !message.trim()}>
-                {sendingMessage ? '...' : 'Reply'}
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '50px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}
+                onClick={handleSendMessage}
+                disabled={sendingMessage || !message.trim()}
+              >
+                {sendingMessage ? '...' : <Send size={18} />}
               </button>
             </div>
           </div>
@@ -220,74 +251,73 @@ export default function RequestDetail() {
 
         {/* Sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          
-          {/* Actions */}
-          {request.status !== 'solved' && (
-            <div className="card" style={{ padding: '2.5rem' }}>
-              {isOwner ? (
-                <>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' }}>Manage request</h3>
-                  <p style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '2rem' }}>Choose a helper below to mark this request as solved and award trust points.</p>
-                  <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => handleMarkSolved()}>Close request</button>
-                </>
-              ) : (
-                <>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' }}>Offer your help</h3>
-                  <p style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '2rem' }}>Help Sara Noor solve this and earn trust points on your profile.</p>
-                  <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleOfferHelp} disabled={offeringHelp}>
-                    {offeringHelp ? 'Sending...' : 'Offer assistance'}
-                  </button>
-                </>
-              )}
+          {request.status !== 'solved' && (!user || user.role !== 'need_help') && (
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Want to help?</h3>
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', opacity: offeringHelp ? 0.7 : 1 }}
+                onClick={handleOfferHelp}
+                disabled={offeringHelp}
+              >
+                <HeartHandshake size={18} /> {offeringHelp ? 'Sending...' : 'Offer Help'}
+              </button>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '1rem' }}>Earn trust points by successfully resolving this request!</p>
             </div>
           )}
 
-          {/* Helpers List */}
-          <div className="card" style={{ padding: '2.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Interested helpers</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>
+              Current Helpers ({request.helpers?.length || 0})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {request.helpers?.map(helper => (
-                <div key={helper._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={helper._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
                       {helper.name.charAt(0)}
                     </div>
                     <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{helper.name}</div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600' }}>{helper.trustScore} pts</div>
+                      <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{helper.name}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>Score: {helper.trustScore}</p>
                     </div>
                   </div>
                   {isOwner && request.status !== 'solved' && (
-                    <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }} onClick={() => handleMarkSolved(helper._id)}>Choose</button>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '8px' }}
+                      onClick={() => handleMarkSolved(helper._id)}
+                    >
+                      Choose
+                    </button>
                   )}
                 </div>
               ))}
               {(!request.helpers || request.helpers.length === 0) && (
-                <p style={{ fontSize: '0.9rem', color: '#64748b', textAlign: 'center' }}>No helpers yet.</p>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>No helpers yet.</p>
               )}
             </div>
           </div>
 
-          {/* Requester Profile */}
-          <div className="card" style={{ padding: '2.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>About the requester</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(14, 165, 142, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: '700' }}>
-                {request.requester?.name.charAt(0)}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Requester Info</h3>
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+              <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>{request.requester?.name}</p>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>Trust Score: {request.requester?.trustScore}</p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {request.requester?.skills?.map(skill => (
+                  <span key={skill} style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>{skill}</span>
+                ))}
               </div>
-              <div>
-                <div style={{ fontWeight: '700' }}>{request.requester?.name}</div>
-                <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Trust Score: {request.requester?.trustScore}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {(request.requester?.skills || []).map(skill => (
-                <span key={skill} className="badge" style={{ background: 'rgba(0,0,0,0.03)', color: '#64748b', fontSize: '0.75rem' }}>{skill}</span>
-              ))}
             </div>
           </div>
         </div>
       </div>
+      
+      <style dangerouslySetInnerHTML={{ __html: `
+        .badge-resolved { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
+        .btn-back:hover { color: #fff !important; transform: translateX(-5px); }
+      `}} />
     </div>
   );
 }

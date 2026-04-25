@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { AlertCircle, ArrowRight } from 'lucide-react';
+import { AlertCircle, Mail, Lock } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -50,91 +50,68 @@ export default function Login() {
   };
 
   return (
-    <div className="container animate-fade-in" style={{ padding: '4rem 2rem', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', width: '100%', maxWidth: '1100px' }}>
+    <div className="container animate-fade-in-up" style={{ padding: '6rem 2rem', display: 'flex', justifyContent: 'center' }}>
+      <div className="glass-card" style={{ width: '100%', maxWidth: '480px', padding: '3.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <h1 className="heading-lg" style={{ marginBottom: '0.5rem' }}>Welcome Back</h1>
+          <p className="text-muted">Enter your credentials to access your dashboard.</p>
+        </div>
         
-        {/* Left: Info Card */}
-        <div className="banner-card" style={{ padding: '4rem 3.5rem', marginBottom: 0, height: '100%' }}>
-          <span className="banner-label">Community Access</span>
-          <h1>Enter the support network.</h1>
-          <p style={{ marginBottom: '3rem' }}>
-            Choose a demo identity, set your role, and jump into a multi-page product flow designed for asking, offering, and tracking help with a premium interface.
-          </p>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1.5rem', opacity: 0.9 }}>
-            {[
-              'Role-based entry for Need Help, Can Help, or Both',
-              'Direct path into dashboard, requests, AI Center, and community feed',
-              'Persistent demo session powered by Cookies'
-            ].map((item, i) => (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)', marginTop: '0.6rem' }}></div>
-                <span style={{ fontSize: '1rem' }}>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Right: Login Form */}
-        <div className="card" style={{ padding: '4rem 3.5rem' }}>
-          <div style={{ marginBottom: '3rem' }}>
-            <span className="banner-label" style={{ color: 'var(--primary)', opacity: 1 }}>Login / Signup</span>
-            <h2 className="heading-lg">Authenticate your community profile</h2>
+        {serverError && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--danger)', fontSize: '0.95rem' }}>
+            <AlertCircle size={20} /> {serverError}
           </div>
+        )}
 
-          {serverError && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
-              <AlertCircle size={18} /> {serverError}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div>
-              <label className="form-label">Select demo user</label>
-              <select className="form-input" style={{ appearance: 'none' }} defaultValue="ayesha">
-                <option value="ayesha">Ayesha Khan</option>
-                <option value="hassan">Hassan Ali</option>
-                <option value="sara">Sara Noor</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div>
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="community@helphub.ai"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <button 
-              className="btn btn-primary" 
-              style={{ width: '100%', padding: '1.25rem', marginTop: '1rem', opacity: loading ? 0.7 : 1 }} 
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? 'Authenticating...' : 'Continue to dashboard'}
-            </button>
-          </form>
-
-          <p style={{ textAlign: 'center', marginTop: '2.5rem', color: '#64748b', fontSize: '0.95rem' }}>
-            New to the community? <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '700' }}>Create an account</Link>
-          </p>
-        </div>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
+              <Mail size={18} /> Email Address
+            </label>
+            <input
+              type="email"
+              className={`form-input ${errors.email ? 'border-danger' : ''}`}
+              placeholder="john@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+              }}
+            />
+            {errors.email && <span className="form-error"><AlertCircle size={14} /> {errors.email}</span>}
+          </div>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
+              <Lock size={18} /> Password
+            </label>
+            <input
+              type="password"
+              className={`form-input ${errors.password ? 'border-danger' : ''}`}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+              }}
+            />
+            {errors.password && <span className="form-error"><AlertCircle size={14} /> {errors.password}</span>}
+          </div>
+          <button 
+            className="btn btn-primary" 
+            style={{ width: '100%', marginTop: '1rem', padding: '1.25rem', opacity: loading ? 0.7 : 1 }} 
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
+          </button>
+        </form>
+        <p style={{ textAlign: 'center', marginTop: '2.5rem', color: '#94a3b8' }}>
+          Don&apos;t have an account yet? <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'underline' }}>Create Account</Link>
+        </p>
       </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .border-danger { border-color: var(--danger) !important; }
+      `}} />
     </div>
   );
 }

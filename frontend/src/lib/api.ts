@@ -138,22 +138,6 @@ export async function addMessage(requestId: string, text: string) {
   });
 }
 
-// ─── Private Messages ────────────────────────
-export async function getConversations() {
-  return request('/messages/conversations');
-}
-
-export async function getConversationMessages(conversationId: string) {
-  return request(`/messages/${conversationId}`);
-}
-
-export async function sendPrivateMessage(recipientId: string, text: string) {
-  return request('/messages', {
-    method: 'POST',
-    body: JSON.stringify({ recipientId, text }),
-  });
-}
-
 // ─── Users / Leaderboard ─────────────────────
 export async function getLeaderboard() {
   return request('/users/leaderboard');
