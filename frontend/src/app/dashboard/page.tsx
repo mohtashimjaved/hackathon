@@ -64,7 +64,7 @@ export default function Dashboard() {
       
       setMyRequests(data.requested || []);
       setHelpingRequests(data.helping || []);
-      setTrends(trendData || DUMMY_TRENDS);
+      setTrends(trendData || []);
       
       const solvedCount = (data.requested || []).filter((r: MyRequest) => r.status === 'solved').length;
       setStats({
@@ -74,9 +74,8 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      // Fallback to dummy data on error to keep UI alive
-      setTrends(DUMMY_TRENDS);
-      setStats(DUMMY_STATS);
+      setTrends([]);
+      setStats({ total: 0, helping: 0, solved: 0 });
     } finally {
       setLoading(false);
     }
@@ -274,29 +273,35 @@ export default function Dashboard() {
           </div>
         </div>
         <div style={{ width: '100%', height: '400px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorHelpGiven" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--success)" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="var(--success)" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false} />
-              <XAxis dataKey="name" stroke="#64748b" tickLine={false} axisLine={false} dy={15} style={{ fontSize: '0.85rem', fontWeight: '500' }} />
-              <YAxis stroke="#64748b" tickLine={false} axisLine={false} dx={-10} style={{ fontSize: '0.85rem', fontWeight: '500' }} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: 'white', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', padding: '1rem' }}
-                itemStyle={{ fontWeight: '700', fontSize: '0.9rem' }}
-              />
-              <Area type="monotone" dataKey="requests" stroke="var(--primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorRequests)" activeDot={{ r: 8, strokeWidth: 2, stroke: 'white', fill: 'var(--primary)' }} />
-              <Area type="monotone" dataKey="helpGiven" stroke="var(--success)" strokeWidth={4} fillOpacity={1} fill="url(#colorHelpGiven)" activeDot={{ r: 8, strokeWidth: 2, stroke: 'white', fill: 'var(--success)' }} />
-            </AreaChart>
-          </ResponsiveContainer>
+          {trends.length === 0 ? (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: '16px', color: '#94a3b8' }}>
+              <p>No activity trends to display yet.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorHelpGiven" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--success)" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="var(--success)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" tickLine={false} axisLine={false} dy={15} style={{ fontSize: '0.85rem', fontWeight: '500' }} />
+                <YAxis stroke="#64748b" tickLine={false} axisLine={false} dx={-10} style={{ fontSize: '0.85rem', fontWeight: '500' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', padding: '1rem' }}
+                  itemStyle={{ fontWeight: '700', fontSize: '0.9rem' }}
+                />
+                <Area type="monotone" dataKey="requests" stroke="var(--primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorRequests)" activeDot={{ r: 8, strokeWidth: 2, stroke: 'white', fill: 'var(--primary)' }} />
+                <Area type="monotone" dataKey="helpGiven" stroke="var(--success)" strokeWidth={4} fillOpacity={1} fill="url(#colorHelpGiven)" activeDot={{ r: 8, strokeWidth: 2, stroke: 'white', fill: 'var(--success)' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
         </div>
       </GuestOverlay>

@@ -72,11 +72,11 @@ export default function Feed() {
       if (data && data.length > 0) {
         setRequests(data);
       } else {
-        setRequests(DUMMY_REQUESTS);
+        setRequests(isAuthenticated ? [] : DUMMY_REQUESTS);
       }
     } catch (err) {
       console.error('Error fetching requests:', err);
-      setRequests(DUMMY_REQUESTS);
+      setRequests(isAuthenticated ? [] : DUMMY_REQUESTS);
     } finally {
       setLoading(false);
     }

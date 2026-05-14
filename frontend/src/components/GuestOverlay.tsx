@@ -28,8 +28,8 @@ export default function GuestOverlay({ children, show, message = "You're viewing
         pointerEvents: 'none'
       }}>
         <div style={{
-          position: 'sticky',
-          top: '2rem',
+          position: 'relative',
+          marginTop: '2rem',
           margin: '0 2rem',
           background: 'rgba(15, 23, 42, 0.9)',
           backdropFilter: 'blur(10px)',

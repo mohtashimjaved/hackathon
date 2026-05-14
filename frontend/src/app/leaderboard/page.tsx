@@ -37,11 +37,11 @@ export default function Leaderboard() {
       if (data && data.length > 0) {
         setUsers(data);
       } else {
-        setUsers(DUMMY_USERS);
+        setUsers(isAuthenticated ? [] : DUMMY_USERS);
       }
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
-      setUsers(DUMMY_USERS);
+      setUsers(isAuthenticated ? [] : DUMMY_USERS);
     } finally {
       setLoading(false);
     }

@@ -258,6 +258,7 @@ export default function Profile() {
                       value={formData.location} 
                       onChange={(e) => setFormData({...formData, location: e.target.value})}
                       className="form-input"
+                      style={{ border: '2px solid var(--primary)', background: '#f8fafc' }}
                       placeholder="City, Country"
                     />
                   ) : (
@@ -269,7 +270,7 @@ export default function Profile() {
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Member Since</label>
                   <p style={{ fontWeight: '600', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Clock size={16} color="var(--primary)" /> {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'May 2023'}
+                    <Clock size={16} color="var(--primary)" /> {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Not available'}
                   </p>
                 </div>
               </div>
@@ -287,7 +288,7 @@ export default function Profile() {
                   value={formData.bio} 
                   onChange={(e) => setFormData({...formData, bio: e.target.value})}
                   className="form-input"
-                  style={{ width: '100%', minHeight: '120px' }}
+                  style={{ width: '100%', minHeight: '120px', border: '2px solid var(--primary)', background: '#f8fafc' }}
                   placeholder="Tell us a bit about yourself..."
                 />
               ) : (
@@ -302,13 +303,23 @@ export default function Profile() {
                 <BookOpen size={22} style={{ color: 'var(--primary)' }} /> Skills & Expertise
               </h3>
               {isEditing ? (
-                <input 
-                  type="text" 
-                  value={formData.skills} 
-                  onChange={(e) => setFormData({...formData, skills: e.target.value})}
-                  className="form-input"
-                  placeholder="e.g. React, Python, Teaching (comma separated)"
-                />
+                <div>
+                  <input 
+                    type="text" 
+                    value={formData.skills} 
+                    onChange={(e) => setFormData({...formData, skills: e.target.value})}
+                    className="form-input"
+                    style={{ border: '2px solid var(--primary)', background: '#f8fafc', marginBottom: '1rem' }}
+                    placeholder="e.g. React, Python, Teaching (comma separated)"
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {formData.skills.split(',').map(s => s.trim()).filter(s => s !== '').map((skill, i) => (
+                      <span key={i} style={{ padding: '0.4rem 1rem', background: 'rgba(5, 150, 105, 0.1)', color: 'var(--primary)', borderRadius: '100px', fontSize: '0.85rem', fontWeight: '600' }}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {profile?.skills && profile.skills.length > 0 ? (
@@ -329,13 +340,23 @@ export default function Profile() {
                 <HeartHandshake size={22} style={{ color: 'var(--secondary)' }} /> Interests
               </h3>
               {isEditing ? (
-                <input 
-                  type="text" 
-                  value={formData.interests} 
-                  onChange={(e) => setFormData({...formData, interests: e.target.value})}
-                  className="form-input"
-                  placeholder="e.g. AI, Hiking, Cooking (comma separated)"
-                />
+                <div>
+                  <input 
+                    type="text" 
+                    value={formData.interests} 
+                    onChange={(e) => setFormData({...formData, interests: e.target.value})}
+                    className="form-input"
+                    style={{ border: '2px solid var(--secondary)', background: '#fffbeb', marginBottom: '1rem' }}
+                    placeholder="e.g. AI, Hiking, Cooking (comma separated)"
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {formData.interests.split(',').map(s => s.trim()).filter(s => s !== '').map((interest, i) => (
+                      <span key={i} style={{ padding: '0.4rem 1rem', background: 'rgba(217, 119, 6, 0.1)', color: 'var(--secondary)', borderRadius: '100px', fontSize: '0.85rem', fontWeight: '600' }}>
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {profile?.interests && profile.interests.length > 0 ? (

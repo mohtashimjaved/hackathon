@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { HeartHandshake, CheckCircle2, MessageSquare, Clock, Tag, ArrowLeft, Send, User } from 'lucide-react';
-import { getRequestById, offerHelp, markSolved, addMessage } from '@/lib/api';
+import { HeartHandshake, CheckCircle2, MessageSquare, Clock, Tag, ArrowLeft, Send, User, Edit3, Trash2, X, AlertCircle, Save } from 'lucide-react';
+import { getRequestById, offerHelp, markSolved, addMessage, updateHelpRequest, deleteHelpRequest } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import Link from 'next/link';
@@ -58,6 +58,17 @@ export default function RequestDetail() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [offeringHelp, setOfferingHelp] = useState(false);
   const [solving, setSolving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    tags: '',
+    urgency: ''
+  });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadRequest();
@@ -77,6 +88,13 @@ export default function RequestDetail() {
       } else {
         const data = await getRequestById(id);
         setRequest(data);
+        setEditData({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          tags: data.tags.join(', '),
+          urgency: data.urgency
+        });
       }
     } catch (err) {
       console.error('Error fetching request detail:', err);
@@ -142,6 +160,38 @@ export default function RequestDetail() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteHelpRequest(id);
+      showToast('Request deleted successfully', 'success');
+      router.push('/feed');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete request', 'error');
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+    try {
+      await updateHelpRequest(id, {
+        ...editData,
+        tags: editData.tags.split(',').map(t => t.trim()).filter(Boolean)
+      });
+      showToast('Request updated successfully', 'success');
+      setShowEditModal(false);
+      await loadRequest();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update request', 'error');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container" style={{ padding: '3rem 2rem' }}>
@@ -187,16 +237,37 @@ export default function RequestDetail() {
           <div className="glass-card" style={{ padding: '3rem', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
               <h1 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.5rem', color: '#0f172a' }}>{request.title}</h1>
-              <span className="badge" style={{ 
-                background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(5, 150, 105, 0.08)',
-                color: request.urgency === 'critical' ? 'var(--danger)' : 'var(--primary)',
-                border: `1px solid ${request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(5, 150, 105, 0.15)'}`,
-                padding: '0.5rem 1rem',
-                fontSize: '0.85rem',
-                fontWeight: '700'
-              }}>
-                {request.urgency.toUpperCase()} URGENCY
-              </span>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                {isOwner && request.status !== 'solved' && (
+                  <div style={{ display: 'flex', gap: '0.75rem', marginRight: '1rem' }}>
+                    <button 
+                      onClick={() => setShowEditModal(true)}
+                      style={{ padding: '0.6rem', borderRadius: '12px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer', display: 'flex', transition: 'all 0.2s ease' }}
+                      title="Edit Request"
+                    >
+                      <Edit3 size={18} />
+                    </button>
+                    <button 
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      style={{ padding: '0.6rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--danger)', border: 'none', cursor: 'pointer', display: 'flex', transition: 'all 0.2s ease' }}
+                      title="Delete Request"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                )}
+                <span className="badge" style={{ 
+                  background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(5, 150, 105, 0.08)',
+                  color: request.urgency === 'critical' ? 'var(--danger)' : 'var(--primary)',
+                  border: `1px solid ${request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(5, 150, 105, 0.15)'}`,
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.85rem',
+                  fontWeight: '700'
+                }}>
+                  {request.urgency.toUpperCase()} URGENCY
+                </span>
+              </div>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', color: '#64748b', fontSize: '0.95rem', marginBottom: '3rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
@@ -355,6 +426,88 @@ export default function RequestDetail() {
         .badge-resolved { background: rgba(16, 185, 129, 0.08); color: var(--success); border-color: rgba(16, 185, 129, 0.15); }
         .btn-back:hover { color: var(--primary) !important; transform: translateX(-8px); }
       `}} />
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}
+          onClick={() => setShowEditModal(false)}
+        >
+          <div className="glass-card animate-fade-in-up" style={{ width: '100%', maxWidth: '700px', padding: '3.5rem', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+              <h2 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.25rem' }}>Edit Help Request</h2>
+              <button onClick={() => setShowEditModal(false)} style={{ background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', display: 'flex' }}><X size={24} /></button>
+            </div>
+            <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Request Title</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={editData.title} 
+                  onChange={(e) => setEditData({...editData, title: e.target.value})}
+                  style={{ background: '#f8fafc', border: '2px solid var(--primary)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Detailed Description</label>
+                <textarea 
+                  className="form-input" 
+                  value={editData.description} 
+                  onChange={(e) => setEditData({...editData, description: e.target.value})}
+                  style={{ minHeight: '150px', resize: 'vertical', background: '#f8fafc', border: '2px solid var(--primary)' }} 
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Category</label>
+                  <select 
+                    className="form-input form-select" 
+                    value={editData.category} 
+                    onChange={(e) => setEditData({...editData, category: e.target.value})}
+                    style={{ background: '#f8fafc', border: '2px solid var(--primary)' }}
+                  >
+                    <option value="Frontend">Frontend</option>
+                    <option value="Backend">Backend</option>
+                    <option value="DevOps">DevOps</option>
+                    <option value="Design">Design</option>
+                    <option value="Database">Database</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Urgency Level</label>
+                  <select 
+                    className="form-input form-select" 
+                    value={editData.urgency} 
+                    onChange={(e) => setEditData({...editData, urgency: e.target.value})}
+                    style={{ background: '#f8fafc', border: '2px solid var(--primary)' }}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Tags (comma separated)</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={editData.tags} 
+                  onChange={(e) => setEditData({...editData, tags: e.target.value})} 
+                  style={{ background: '#f8fafc', border: '2px solid var(--primary)' }}
+                />
+              </div>
+              <button className="btn btn-primary" type="submit" style={{ padding: '1.4rem', marginTop: '1rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }} disabled={updating}>
+                {updating ? 'Saving...' : <><Save size={20} /> Save Changes</>}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

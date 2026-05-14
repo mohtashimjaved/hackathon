@@ -138,6 +138,26 @@ export async function addMessage(requestId: string, text: string) {
   });
 }
 
+export async function updateHelpRequest(id: string, payload: {
+  title?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  urgency?: string;
+  status?: string;
+}) {
+  return request(`/requests/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteHelpRequest(id: string) {
+  return request(`/requests/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ─── Users / Leaderboard ─────────────────────
 export async function getLeaderboard() {
   return request('/users/leaderboard');

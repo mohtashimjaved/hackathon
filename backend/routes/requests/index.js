@@ -8,6 +8,8 @@ import getSingleRequestDetail from "./getSingleRequestDetail.js";
 import offerHelp from "./offerHelp.js";
 import markSolved from "./markSolved.js";
 import messageOnRequest from "./messageOnRequest.js";
+import updateRequest from "./updateRequest.js";
+import deleteRequest from "./deleteRequest.js";
 
 const router = express.Router();
 
@@ -19,5 +21,7 @@ router.get('/:id', getSingleRequestDetail);
 router.post('/:id/offer-help', tokenVerification, offerHelp);
 router.post('/:id/solve', tokenVerification, markSolved);
 router.post('/:id/messages', tokenVerification, messageOnRequest);
+router.put('/:id', tokenVerification, updateRequest);
+router.delete('/:id', tokenVerification, deleteRequest);
 
 export default router;
