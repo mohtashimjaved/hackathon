@@ -21,14 +21,7 @@ interface UserProfile {
   createdAt?: string;
 }
 
-const DICEBEAR_STYLES = [
-  { id: 'notionists', label: 'Notionists' },
-  { id: 'adventurer', label: 'Adventurer' },
-  { id: 'bottts', label: 'Bottts' },
-  { id: 'avataaars', label: 'Avataaars' },
-  { id: 'lorelei', label: 'Lorelei' },
-  { id: 'micah', label: 'Micah' },
-];
+const AVATAR_VARIANTS = [0, 1, 2, 3, 4, 5];
 
 export default function Profile() {
   const { user, isAuthenticated, refreshUser } = useAuth();
@@ -217,11 +210,13 @@ export default function Profile() {
                   <Camera size={20} style={{ color: 'var(--primary)' }} /> Choose Avatar
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                  {DICEBEAR_STYLES.map((opt) => {
-                    const avatarUrl = `https://api.dicebear.com/7.x/${opt.id}/svg?seed=${encodeURIComponent(formData.name || profile?.name || 'User')}`;
+                  {AVATAR_VARIANTS.map((variantIndex) => {
+                    const seedBase = formData.name || profile?.name || 'User';
+                    const seed = variantIndex === 0 ? seedBase : `${seedBase}-${variantIndex}`;
+                    const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}`;
                     return (
                       <div 
-                        key={opt.id}
+                        key={variantIndex}
                         onClick={() => setFormData({...formData, avatar: avatarUrl})}
                         style={{ 
                           width: '100%', 
@@ -238,7 +233,7 @@ export default function Profile() {
                           overflow: 'hidden'
                         }}
                       >
-                        <img src={avatarUrl} alt={opt.label} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                        <img src={avatarUrl} alt={`Avatar Variant ${variantIndex + 1}`} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
                       </div>
                     );
                   })}
