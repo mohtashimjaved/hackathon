@@ -8,6 +8,11 @@ interface User {
   name: string;
   email: string;
   role: string;
+  avatar?: string;
+  bio?: string;
+  skills?: string[];
+  interests?: string[];
+  location?: string;
   trustScore?: number;
 }
 
@@ -57,6 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: freshUser.name,
             email: freshUser.email,
             role: freshUser.role,
+            avatar: freshUser.avatar,
+            bio: freshUser.bio,
+            skills: freshUser.skills,
+            interests: freshUser.interests,
+            location: freshUser.location,
             trustScore: freshUser.trustScore
           };
           setUser(mappedUser);
@@ -100,6 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: freshUser.name,
         email: freshUser.email,
         role: freshUser.role,
+        avatar: freshUser.avatar,
+        bio: freshUser.bio,
+        skills: freshUser.skills,
+        interests: freshUser.interests,
+        location: freshUser.location,
         trustScore: freshUser.trustScore
       };
       setUser(mappedUser);

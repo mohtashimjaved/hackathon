@@ -64,12 +64,22 @@ export default function RequestDetail() {
   }, [id]);
 
   const loadRequest = async () => {
+    // Dummy data mapping for guest preview
+    const DUMMY_DATA_MAP: Record<string, RequestData> = {
+      '1': { _id: '1', title: 'Connect MongoDB to Next.js', description: 'I am trying to setup a connection between my Next.js API routes and a MongoDB Atlas cluster. I keep getting timeout errors.', category: 'Backend', tags: ['MongoDB', 'Next.js'], urgency: 'high', status: 'solved', requester: { _id: 'u1', name: 'James Clear', skills: ['React'], trustScore: 450 }, helpers: [{ _id: 'h1', name: 'Helper Pro', trustScore: 1200 }], messages: [], createdAt: new Date().toISOString() },
+      '2': { _id: '2', title: 'Center a div with Tailwind', description: 'What is the best way to center a div both horizontally and vertically using Tailwind CSS utility classes?', category: 'Frontend', tags: ['CSS', 'Tailwind'], urgency: 'medium', status: 'open', requester: { _id: 'u2', name: 'Elena Gilbert', skills: ['Design'], trustScore: 820 }, helpers: [], messages: [], createdAt: new Date().toISOString() },
+    };
+
     setLoading(true);
     try {
-      const data = await getRequestById(id);
-      setRequest(data);
+      if (DUMMY_DATA_MAP[id]) {
+        setRequest(DUMMY_DATA_MAP[id]);
+      } else {
+        const data = await getRequestById(id);
+        setRequest(data);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching request detail:', err);
     } finally {
       setLoading(false);
     }
@@ -135,178 +145,205 @@ export default function RequestDetail() {
   if (loading) {
     return (
       <div className="container" style={{ padding: '3rem 2rem' }}>
-        <div className="skeleton" style={{ width: '100px', height: '20px', marginBottom: '2rem' }}></div>
-        <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div className="glass-card skeleton" style={{ height: '300px' }}></div>
-            <div className="glass-card skeleton" style={{ height: '400px' }}></div>
+        <div className="skeleton" style={{ width: '150px', height: '24px', marginBottom: '2.5rem', borderRadius: '100px' }}></div>
+        <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '2.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            <div className="glass-card skeleton" style={{ height: '350px', borderRadius: '24px' }}></div>
+            <div className="glass-card skeleton" style={{ height: '450px', borderRadius: '24px' }}></div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div className="glass-card skeleton" style={{ height: '150px' }}></div>
-            <div className="glass-card skeleton" style={{ height: '250px' }}></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            <div className="glass-card skeleton" style={{ height: '180px', borderRadius: '24px' }}></div>
+            <div className="glass-card skeleton" style={{ height: '280px', borderRadius: '24px' }}></div>
           </div>
         </div>
+        <style dangerouslySetInnerHTML={{ __html: `
+          .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+          }
+          @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}} />
       </div>
     );
   }
 
-  if (!request) return <div className="container" style={{ padding: '3rem 2rem', textAlign: 'center' }}>Request not found.</div>;
+  if (!request) return <div className="container" style={{ padding: '3rem 2rem', textAlign: 'center', fontSize: '1.2rem', color: '#64748b' }}>Request not found.</div>;
 
   const isOwner = user?.id === request.requester?._id;
 
   return (
     <div className="container animate-fade-in-up" style={{ padding: '3rem 2rem' }}>
-      <Link href="/feed" className="btn-back" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', textDecoration: 'none', marginBottom: '2rem', width: 'fit-content' }}>
-        <ArrowLeft size={18} /> Back to Feed
+      <Link href="/feed" className="btn-back" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#64748b', textDecoration: 'none', marginBottom: '2.5rem', width: 'fit-content', fontWeight: '700', transition: 'all 0.3s ease' }}>
+        <ArrowLeft size={20} /> Back to Community Feed
       </Link>
 
-      <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '2.5rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {/* Main Content */}
-          <div className="glass-card" style={{ padding: '2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-              <h1 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.2rem' }}>{request.title}</h1>
+          <div className="glass-card" style={{ padding: '3rem', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+              <h1 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.5rem', color: '#0f172a' }}>{request.title}</h1>
               <span className="badge" style={{ 
-                background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(79, 70, 229, 0.1)',
+                background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(5, 150, 105, 0.08)',
                 color: request.urgency === 'critical' ? 'var(--danger)' : 'var(--primary)',
-                border: '1px solid rgba(255,255,255,0.05)'
+                border: `1px solid ${request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(5, 150, 105, 0.15)'}`,
+                padding: '0.5rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: '700'
               }}>
-                {request.urgency.toUpperCase()}
+                {request.urgency.toUpperCase()} URGENCY
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <User size={14} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', color: '#64748b', fontSize: '0.95rem', marginBottom: '3rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <User size={18} style={{ color: 'var(--primary)' }} />
                 </div>
-                <span style={{ color: '#fff', fontWeight: '500' }}>{request.requester?.name}</span>
+                <span style={{ color: '#1e293b', fontWeight: '700' }}>{request.requester?.name}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={16} /> {timeAgo(request.createdAt)}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Tag size={16} /> {request.category}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: '500' }}><Clock size={18} /> {timeAgo(request.createdAt)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: '500' }}><Tag size={18} /> {request.category}</div>
             </div>
 
-            <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#e2e8f0', marginBottom: '2rem' }}>
+            <div style={{ fontSize: '1.15rem', lineHeight: '2', color: '#334155', marginBottom: '3rem', whiteSpace: 'pre-wrap' }}>
               {request.description}
-            </p>
+            </div>
 
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {request.tags.map(tag => (
-                <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.4rem 1rem', borderRadius: '100px' }}>
-                  <Tag size={12} /> {tag}
+                <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--primary)', background: 'rgba(5, 150, 105, 0.08)', padding: '0.5rem 1.25rem', borderRadius: '100px', fontWeight: '600', border: '1px solid rgba(5, 150, 105, 0.1)' }}>
+                  <Tag size={14} /> {tag}
                 </span>
               ))}
             </div>
           </div>
 
           {/* Discussion */}
-          <div className="glass-card">
-            <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MessageSquare size={20} /> Discussion ({request.messages?.length || 0})
+          <div className="glass-card" style={{ padding: '3rem', background: 'white' }}>
+            <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', fontWeight: '800', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#0f172a' }}>
+              <MessageSquare size={24} style={{ color: 'var(--primary)' }} /> Discussion ({request.messages?.length || 0})
             </h3>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '1rem' }}>
               {request.messages?.map((msg) => (
-                <div key={msg._id} style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <User size={20} />
+                <div key={msg._id} style={{ display: 'flex', gap: '1.25rem' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#f1f5f9', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <User size={24} style={{ color: '#64748b' }} />
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '0 12px 12px 12px', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: '600', color: '#fff' }}>{msg.sender?.name}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{timeAgo(msg.createdAt)}</span>
+                  <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '0 24px 24px 24px', flex: 1, border: '1px solid rgba(0,0,0,0.03)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '1.05rem' }}>{msg.sender?.name}</span>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: '500' }}>{timeAgo(msg.createdAt)}</span>
                     </div>
-                    <p style={{ color: '#cbd5e1' }}>{msg.text}</p>
+                    <p style={{ color: '#475569', lineHeight: '1.6', fontSize: '1rem' }}>{msg.text}</p>
                   </div>
                 </div>
               ))}
               {(!request.messages || request.messages.length === 0) && (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  No messages yet. Start the conversation!
+                <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#94a3b8', background: '#f8fafc', borderRadius: '24px', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                   <MessageSquare size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+                   <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>No messages yet. Start the conversation!</p>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', background: '#f8fafc', padding: '0.5rem', borderRadius: '100px', border: '1px solid rgba(0,0,0,0.05)' }}>
               <input
                 type="text"
                 className="form-input"
                 placeholder={isAuthenticated ? 'Type your message...' : 'Sign in to message...'}
-                style={{ flex: 1 }}
+                style={{ flex: 1, background: 'transparent', border: 'none', boxShadow: 'none', paddingLeft: '1.5rem' }}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               />
               <button 
                 className="btn btn-primary" 
-                style={{ width: '50px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}
+                style={{ width: '56px', height: '56px', padding: 0, borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, boxShadow: '0 10px 20px rgba(5, 150, 105, 0.2)' }}
                 onClick={handleSendMessage}
                 disabled={sendingMessage || !message.trim()}
               >
-                {sendingMessage ? '...' : <Send size={18} />}
+                {sendingMessage ? '...' : <Send size={22} />}
               </button>
             </div>
           </div>
         </div>
 
         {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {request.status !== 'solved' && (!user || user.role !== 'need_help') && (
-            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Want to help?</h3>
+            <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.04)' }}>
+              <div style={{ width: '64px', height: '64px', background: 'rgba(5, 150, 105, 0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--primary)' }}>
+                <HeartHandshake size={32} />
+              </div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.75rem', color: '#0f172a' }}>Want to help?</h3>
+              <p style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '2rem', lineHeight: '1.6' }}>Earn trust points and build your reputation by resolving this request!</p>
               <button 
                 className="btn btn-primary" 
-                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', opacity: offeringHelp ? 0.7 : 1 }}
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.75rem', padding: '1.25rem', borderRadius: '100px', fontSize: '1.05rem', fontWeight: '700' }}
                 onClick={handleOfferHelp}
                 disabled={offeringHelp}
               >
-                <HeartHandshake size={18} /> {offeringHelp ? 'Sending...' : 'Offer Help'}
+                <HeartHandshake size={20} /> {offeringHelp ? 'Sending...' : 'Offer Assistance'}
               </button>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '1rem' }}>Earn trust points by successfully resolving this request!</p>
             </div>
           )}
 
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>
-              Current Helpers ({request.helpers?.length || 0})
+          <div className="glass-card" style={{ padding: '2.5rem', background: 'white' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '1.75rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <User size={20} style={{ color: 'var(--primary)' }} /> Helpers ({request.helpers?.length || 0})
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {request.helpers?.map(helper => (
-                <div key={helper._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                <div key={helper._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', background: '#f8fafc', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: '900', boxShadow: '0 8px 16px rgba(5, 150, 105, 0.2)' }}>
                       {helper.name.charAt(0)}
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{helper.name}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>Score: {helper.trustScore}</p>
+                      <p style={{ fontSize: '1rem', fontWeight: '700', color: '#1e293b' }}>{helper.name}</p>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '700' }}>Score: {helper.trustScore}</p>
                     </div>
                   </div>
                   {isOwner && request.status !== 'solved' && (
                     <button 
                       className="btn btn-secondary" 
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '8px' }}
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', borderRadius: '100px', fontWeight: '700', background: 'white' }}
                       onClick={() => handleMarkSolved(helper._id)}
                     >
-                      Choose
+                      Verify
                     </button>
                   )}
                 </div>
               ))}
               {(!request.helpers || request.helpers.length === 0) && (
-                <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>No helpers yet.</p>
+                <div style={{ textAlign: 'center', padding: '2rem 0', color: '#94a3b8', background: '#f8fafc', borderRadius: '20px', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                   <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>No helpers yet.</p>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Requester Info</h3>
-            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-              <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>{request.requester?.name}</p>
-              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>Trust Score: {request.requester?.trustScore}</p>
+          <div className="glass-card" style={{ padding: '2.5rem', background: 'white' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '1.75rem', color: '#0f172a' }}>Requester Profile</h3>
+            <div style={{ padding: '1.75rem', background: '#f8fafc', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={24} style={{ color: '#64748b' }} />
+                </div>
+                <div>
+                  <p style={{ fontWeight: '800', color: '#1e293b', fontSize: '1.1rem' }}>{request.requester?.name}</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '700' }}>Trust Score: {request.requester?.trustScore}</p>
+                </div>
+              </div>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {request.requester?.skills?.map(skill => (
-                  <span key={skill} style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>{skill}</span>
+                  <span key={skill} style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', background: 'white', borderRadius: '100px', color: '#475569', fontWeight: '600', border: '1px solid rgba(0,0,0,0.05)' }}>{skill}</span>
                 ))}
               </div>
             </div>
@@ -315,8 +352,8 @@ export default function RequestDetail() {
       </div>
       
       <style dangerouslySetInnerHTML={{ __html: `
-        .badge-resolved { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
-        .btn-back:hover { color: #fff !important; transform: translateX(-5px); }
+        .badge-resolved { background: rgba(16, 185, 129, 0.08); color: var(--success); border-color: rgba(16, 185, 129, 0.15); }
+        .btn-back:hover { color: var(--primary) !important; transform: translateX(-8px); }
       `}} />
     </div>
   );

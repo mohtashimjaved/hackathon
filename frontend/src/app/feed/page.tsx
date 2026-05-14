@@ -7,6 +7,7 @@ import { Search, Filter, HeartHandshake, Clock, Tag, Plus, X, AlertCircle } from
 import { getRequests, createRequest, offerHelp } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import GuestOverlay from '@/components/GuestOverlay';
 
 interface HelpRequest {
   _id: string;
@@ -54,6 +55,12 @@ export default function Feed() {
   const [creating, setCreating] = useState(false);
   const [offerLoadingId, setOfferLoadingId] = useState<string | null>(null);
 
+  const DUMMY_REQUESTS: HelpRequest[] = [
+    { _id: '1', title: 'React Performance Optimization', description: 'Need help with large list rendering...', category: 'Frontend', tags: ['React', 'WebPerf'], urgency: 'high', status: 'open', requester: { _id: '101', name: 'James Clear', trustScore: 450 }, helpers: [], createdAt: new Date().toISOString() },
+    { _id: '2', title: 'Kubernetes Cluster Setup', description: 'Struggling with helm charts...', category: 'DevOps', tags: ['K8s', 'Docker'], urgency: 'critical', status: 'in-progress', requester: { _id: '102', name: 'Elena Gilbert', trustScore: 820 }, helpers: ['103'], createdAt: new Date().toISOString() },
+    { _id: '3', title: 'GraphQL Schema Design', description: 'Best practices for nested types?', category: 'Backend', tags: ['GraphQL', 'API'], urgency: 'medium', status: 'open', requester: { _id: '104', name: 'Stefan Salvatore', trustScore: 310 }, helpers: [], createdAt: new Date().toISOString() },
+  ];
+
   useEffect(() => {
     loadRequests();
   }, []);
@@ -62,9 +69,14 @@ export default function Feed() {
     setLoading(true);
     try {
       const data = await getRequests();
-      setRequests(data);
+      if (data && data.length > 0) {
+        setRequests(data);
+      } else {
+        setRequests(DUMMY_REQUESTS);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching requests:', err);
+      setRequests(DUMMY_REQUESTS);
     } finally {
       setLoading(false);
     }
@@ -152,7 +164,8 @@ export default function Feed() {
 
   return (
     <div className="container animate-fade-in-up" style={{ padding: '3rem 2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+      <GuestOverlay show={!isAuthenticated} message="You're viewing community requests as a guest. Sign in to post or offer help!">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
           <h1 className="heading-lg" style={{ marginBottom: '0.5rem' }}>Community Feed</h1>
           <p className="text-muted">Discover peers who need your expertise, or post your own request.</p>
@@ -169,21 +182,21 @@ export default function Feed() {
       </div>
 
       {/* Search and filter bar */}
-      <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', gap: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)' }}>
+      <div className="glass-card" style={{ marginBottom: '2.5rem', display: 'flex', gap: '1.5rem', padding: '1.25rem', background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
         <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={20} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+          <Search size={20} style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
           <input 
             type="text" 
             className="form-input" 
             placeholder="Search requests by title, tags, or category..." 
-            style={{ paddingLeft: '3rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.3)', borderRadius: '100px' }}
+            style={{ paddingLeft: '3.5rem', border: '1px solid rgba(0,0,0,0.05)', background: '#f8fafc', borderRadius: '100px' }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <button
           className="btn btn-secondary"
-          style={{ gap: '0.5rem', borderRadius: '100px', background: showFilters ? 'rgba(79,70,229,0.15)' : 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}
+          style={{ gap: '0.6rem', borderRadius: '100px', background: showFilters ? 'rgba(5, 150, 105, 0.1)' : 'white', border: '1px solid rgba(0,0,0,0.05)', color: showFilters ? 'var(--primary)' : undefined }}
           onClick={() => setShowFilters(!showFilters)}
         >
           <Filter size={18} /> Filters
@@ -192,20 +205,20 @@ export default function Feed() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="glass-card animate-fade-in-up" style={{ marginBottom: '2rem', padding: '1.5rem' }}>
+        <div className="glass-card animate-fade-in-up" style={{ marginBottom: '2.5rem', padding: '1.5rem', borderLeft: '4px solid var(--primary)' }}>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ color: '#94a3b8', fontWeight: '500', fontSize: '0.9rem' }}>Category:</span>
+            <span style={{ color: '#64748b', fontWeight: '600', fontSize: '0.95rem' }}>Category:</span>
             <button
               onClick={() => setFilterCategory('')}
               className="btn btn-secondary"
-              style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '100px', background: !filterCategory ? 'rgba(79,70,229,0.2)' : undefined, borderColor: !filterCategory ? 'var(--primary)' : undefined }}
+              style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', borderRadius: '100px', background: !filterCategory ? 'var(--primary)' : 'white', color: !filterCategory ? 'white' : undefined, borderColor: !filterCategory ? 'var(--primary)' : undefined }}
             >All</button>
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setFilterCategory(cat)}
                 className="btn btn-secondary"
-                style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '100px', background: filterCategory === cat ? 'rgba(79,70,229,0.2)' : undefined, borderColor: filterCategory === cat ? 'var(--primary)' : undefined }}
+                style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', borderRadius: '100px', background: filterCategory === cat ? 'var(--primary)' : 'white', color: filterCategory === cat ? 'white' : undefined, borderColor: filterCategory === cat ? 'var(--primary)' : undefined }}
               >{cat}</button>
             ))}
           </div>
@@ -216,47 +229,47 @@ export default function Feed() {
       <div className="grid delay-100" style={{ gridTemplateColumns: '1fr' }}>
         {loading ? (
           <>
-            <div className="glass-card skeleton" style={{ height: '180px', marginBottom: '1.5rem' }}></div>
-            <div className="glass-card skeleton" style={{ height: '180px', marginBottom: '1.5rem' }}></div>
-            <div className="glass-card skeleton" style={{ height: '180px', marginBottom: '1.5rem' }}></div>
+            <div className="glass-card skeleton" style={{ height: '200px', marginBottom: '1.5rem' }}></div>
+            <div className="glass-card skeleton" style={{ height: '200px', marginBottom: '1.5rem' }}></div>
+            <div className="glass-card skeleton" style={{ height: '200px', marginBottom: '1.5rem' }}></div>
           </>
         ) : (
           <>
             {filteredRequests.map((request, index) => (
               <Link key={request._id} href={`/requests/${request._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="glass-card animate-fade-in-up request-card" style={{ padding: '2rem', animationDelay: `${index * 100}ms`, cursor: 'pointer', transition: 'all 0.3s ease', marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.4rem', fontWeight: '600', fontFamily: 'var(--font-heading)' }}>{request.title}</h3>
+                <div className="glass-card animate-fade-in-up request-card" style={{ padding: '2.5rem', animationDelay: `${index * 100}ms`, cursor: 'pointer', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', marginBottom: '1.5rem', background: 'white' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-heading)', color: '#0f172a' }}>{request.title}</h3>
                     <span className="badge" style={{ 
-                      background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.1)' : request.urgency === 'high' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                      color: request.urgency === 'critical' ? 'var(--danger)' : request.urgency === 'high' ? 'var(--warning)' : 'var(--success)',
-                      border: `1px solid ${request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.2)' : request.urgency === 'high' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`
+                      background: request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.08)' : request.urgency === 'high' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(5, 150, 105, 0.08)',
+                      color: request.urgency === 'critical' ? 'var(--danger)' : request.urgency === 'high' ? 'var(--warning)' : 'var(--primary)',
+                      border: `1px solid ${request.urgency === 'critical' ? 'rgba(239, 68, 68, 0.15)' : request.urgency === 'high' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(5, 150, 105, 0.15)'}`
                     }}>
                       {request.urgency} Urgency
                     </span>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
                     {request.tags.map(tag => (
-                      <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.3rem 0.8rem', borderRadius: '100px' }}>
-                        <Tag size={12} /> {tag}
+                      <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--primary)', background: 'rgba(5, 150, 105, 0.08)', padding: '0.4rem 1rem', borderRadius: '100px', fontWeight: '600' }}>
+                        <Tag size={14} /> {tag}
                       </span>
                     ))}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem', marginTop: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                      <span style={{ fontWeight: '500', color: '#cbd5e1' }}>{request.requester?.name || 'Anonymous'}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={14} /> {timeAgo(request.createdAt)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', color: '#64748b', fontSize: '0.95rem' }}>
+                      <span style={{ fontWeight: '600', color: '#334155' }}>{request.requester?.name || 'Anonymous'}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={16} /> {timeAgo(request.createdAt)}</span>
                     </div>
                     {(!user || user.role !== 'need_help') && (
                       <button
                         className="btn btn-secondary"
-                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', gap: '0.5rem', color: 'var(--primary)', borderColor: 'rgba(79, 70, 229, 0.3)', opacity: offerLoadingId === request._id ? 0.6 : 1 }}
+                        style={{ padding: '0.6rem 1.25rem', fontSize: '0.9rem', gap: '0.6rem', color: 'var(--primary)', borderColor: 'rgba(5, 150, 105, 0.2)', background: 'white', fontWeight: '700' }}
                         onClick={(e) => handleOfferHelp(e, request._id)}
                         disabled={offerLoadingId === request._id}
                       >
-                        <HeartHandshake size={16} /> {offerLoadingId === request._id ? 'Sending...' : 'Offer Help'}
+                        <HeartHandshake size={18} /> {offerLoadingId === request._id ? 'Sending...' : 'Offer Help'}
                       </button>
                     )}
                   </div>
@@ -264,8 +277,9 @@ export default function Feed() {
               </Link>
             ))}
             {filteredRequests.length === 0 && (
-              <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>
-                <p>No requests found matching your search.</p>
+              <div style={{ padding: '6rem', textAlign: 'center', color: '#94a3b8' }}>
+                <div style={{ marginBottom: '1.5rem', opacity: 0.5 }}><Search size={64} /></div>
+                <p style={{ fontSize: '1.2rem' }}>No requests found matching your search.</p>
               </div>
             )}
           </>
@@ -274,19 +288,19 @@ export default function Feed() {
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}
           onClick={() => setShowCreateModal(false)}
         >
-          <div className="glass-card animate-fade-in-up" style={{ width: '100%', maxWidth: '650px', padding: '3rem' }}
+          <div className="glass-card animate-fade-in-up" style={{ width: '100%', maxWidth: '700px', padding: '3.5rem', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-              <h2 className="heading-lg" style={{ marginBottom: 0, fontSize: '2rem' }}>Post a Help Request</h2>
-              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={28} /></button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+              <h2 className="heading-lg" style={{ marginBottom: 0, fontSize: '2.25rem' }}>Post a Help Request</h2>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', display: 'flex' }}><X size={24} /></button>
             </div>
             <form onSubmit={handleCreateRequest} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>Request Title</label>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Request Title</label>
                 <input 
                   name="title"
                   type="text" 
@@ -294,29 +308,31 @@ export default function Feed() {
                   placeholder="e.g. Need help debugging React state issue" 
                   value={createData.title} 
                   onChange={handleCreateChange}
+                  style={{ background: '#f8fafc' }}
                 />
                 {createErrors.title && <span className="form-error"><AlertCircle size={14} /> {createErrors.title}</span>}
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>Detailed Description</label>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Detailed Description</label>
                 <textarea 
                   name="description"
                   className={`form-input ${createErrors.description ? 'border-danger' : ''}`} 
                   placeholder="Describe your problem in detail so others can help..." 
                   value={createData.description} 
                   onChange={handleCreateChange}
-                  style={{ minHeight: '150px', resize: 'vertical' }} 
+                  style={{ minHeight: '150px', resize: 'vertical', background: '#f8fafc' }} 
                 />
                 {createErrors.description && <span className="form-error"><AlertCircle size={14} /> {createErrors.description}</span>}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>Category</label>
+                  <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Category</label>
                   <select 
                     name="category"
                     className="form-input form-select" 
                     value={createData.category} 
                     onChange={handleCreateChange}
+                    style={{ background: '#f8fafc' }}
                   >
                     <option value="Frontend">Frontend</option>
                     <option value="Backend">Backend</option>
@@ -327,12 +343,13 @@ export default function Feed() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>Urgency Level</label>
+                  <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Urgency Level</label>
                   <select 
                     name="urgency"
                     className="form-input form-select" 
                     value={createData.urgency} 
                     onChange={handleCreateChange}
+                    style={{ background: '#f8fafc' }}
                   >
                     <option value="low">Low - Take your time</option>
                     <option value="medium">Medium - Within a few days</option>
@@ -342,7 +359,7 @@ export default function Feed() {
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>Tags (comma separated)</label>
+                <label style={{ display: 'block', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>Tags (comma separated)</label>
                 <input 
                   name="tags"
                   type="text" 
@@ -350,9 +367,10 @@ export default function Feed() {
                   placeholder="React, CSS, bug..." 
                   value={createData.tags} 
                   onChange={handleCreateChange} 
+                  style={{ background: '#f8fafc' }}
                 />
               </div>
-              <button className="btn btn-primary" type="submit" style={{ padding: '1.25rem', marginTop: '1rem', opacity: creating ? 0.7 : 1 }} disabled={creating}>
+              <button className="btn btn-primary" type="submit" style={{ padding: '1.4rem', marginTop: '1rem', fontSize: '1.1rem' }} disabled={creating}>
                 {creating ? 'Publishing Request...' : 'Publish Help Request'}
               </button>
             </form>
@@ -361,12 +379,12 @@ export default function Feed() {
       )}
 
       <style dangerouslySetInnerHTML={{__html: `
-        .request-card:hover { transform: translateY(-5px); border-color: rgba(79, 70, 229, 0.3); }
+        .request-card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(5, 150, 105, 0.08) !important; }
         .skeleton {
-          background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+          background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
           background-size: 200% 100%;
           animation: skeleton-loading 1.5s infinite;
-          border-radius: 12px;
+          border-radius: 20px;
         }
         @keyframes skeleton-loading {
           0% { background-position: 200% 0; }
@@ -374,6 +392,7 @@ export default function Feed() {
         }
         .border-danger { border-color: var(--danger) !important; }
       `}} />
+      </GuestOverlay>
     </div>
   );
 }

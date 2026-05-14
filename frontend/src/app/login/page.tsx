@@ -51,22 +51,22 @@ export default function Login() {
 
   return (
     <div className="container animate-fade-in-up" style={{ padding: '6rem 2rem', display: 'flex', justifyContent: 'center' }}>
-      <div className="glass-card" style={{ width: '100%', maxWidth: '480px', padding: '3.5rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h1 className="heading-lg" style={{ marginBottom: '0.5rem' }}>Welcome Back</h1>
-          <p className="text-muted">Enter your credentials to access your dashboard.</p>
+      <div className="glass-card" style={{ width: '100%', maxWidth: '520px', padding: '4rem', background: 'white', boxShadow: '0 40px 100px rgba(0,0,0,0.08)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <h1 className="heading-lg" style={{ marginBottom: '0.75rem', fontSize: '2.5rem' }}>Welcome Back</h1>
+          <p className="text-muted" style={{ fontSize: '1.05rem' }}>Enter your credentials to access your dashboard.</p>
         </div>
         
         {serverError && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--danger)', fontSize: '0.95rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '1.25rem', borderRadius: '16px', marginBottom: '2.5rem', color: 'var(--danger)', fontSize: '0.95rem', fontWeight: '500' }}>
             <AlertCircle size={20} /> {serverError}
           </div>
         )}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Mail size={18} /> Email Address
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>
+              <Mail size={18} style={{ color: 'var(--primary)' }} /> Email Address
             </label>
             <input
               type="email"
@@ -77,12 +77,13 @@ export default function Login() {
                 setEmail(e.target.value);
                 if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
               }}
+              style={{ background: '#f8fafc' }}
             />
             {errors.email && <span className="form-error"><AlertCircle size={14} /> {errors.email}</span>}
           </div>
           <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#cbd5e1', fontWeight: '500' }}>
-              <Lock size={18} /> Password
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem', color: '#334155', fontWeight: '600' }}>
+              <Lock size={18} style={{ color: 'var(--primary)' }} /> Password
             </label>
             <input
               type="password"
@@ -93,20 +94,21 @@ export default function Login() {
                 setPassword(e.target.value);
                 if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
               }}
+              style={{ background: '#f8fafc' }}
             />
             {errors.password && <span className="form-error"><AlertCircle size={14} /> {errors.password}</span>}
           </div>
           <button 
             className="btn btn-primary" 
-            style={{ width: '100%', marginTop: '1rem', padding: '1.25rem', opacity: loading ? 0.7 : 1 }} 
+            style={{ width: '100%', marginTop: '1rem', padding: '1.4rem', fontSize: '1.1rem' }} 
             type="submit"
             disabled={loading}
           >
             {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
           </button>
         </form>
-        <p style={{ textAlign: 'center', marginTop: '2.5rem', color: '#94a3b8' }}>
-          Don&apos;t have an account yet? <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'underline' }}>Create Account</Link>
+        <p style={{ textAlign: 'center', marginTop: '3rem', color: '#64748b', fontSize: '1.05rem' }}>
+          Don&apos;t have an account yet? <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none', borderBottom: '2px solid var(--primary)' }}>Create Account</Link>
         </p>
       </div>
       <style dangerouslySetInnerHTML={{ __html: `

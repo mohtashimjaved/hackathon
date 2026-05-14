@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import User from '../../models/User.js';
 
 const register = async (req, res) => {
   try {
@@ -17,7 +18,8 @@ const register = async (req, res) => {
       role: role || 'both',
       skills: skills || [],
       interests: interests || [],
-      location: location || ''
+      location: location || '',
+      avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}`
     });
     
     await user.save();

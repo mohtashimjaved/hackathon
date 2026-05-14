@@ -147,6 +147,25 @@ export async function getUserProfile(id: string) {
   return request(`/users/${id}`);
 }
 
+export async function updateProfile(payload: {
+  name?: string;
+  avatar?: string;
+  bio?: string;
+  skills?: string[];
+  interests?: string[];
+  location?: string;
+}) {
+  const data = await request('/users/me', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  
+  // Update the user cookie with the fresh data
+  setCookie('user', JSON.stringify(data.user));
+  
+  return data;
+}
+
 export async function getTrends() {
   return request('/requests/stats/trends');
 }
