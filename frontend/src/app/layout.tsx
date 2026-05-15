@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { DialogProvider } from '@/context/DialogContext';
 
 export const metadata: Metadata = {
   title: 'Helplytics | Community Support & Skill Sharing',
@@ -22,12 +23,14 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <ToastProvider>
-            <div className="app-container">
-              <Navbar />
-              <main className="main-content">
-                {children}
-              </main>
-            </div>
+            <DialogProvider>
+              <div className="app-container">
+                <Navbar />
+                <main className="main-content">
+                  {children}
+                </main>
+              </div>
+            </DialogProvider>
           </ToastProvider>
         </AuthProvider>
       </body>
