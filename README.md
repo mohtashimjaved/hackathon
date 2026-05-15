@@ -2,8 +2,6 @@
 
 **Helplytics** is a premium, collaborative problem-solving platform designed for tech enthusiasts and developers to seek assistance, share expertise, and build a reputation within a high-performance community.
 
-![Helplytics Preview](https://api.dicebear.com/7.x/notionists/svg?seed=Helplytics&backgroundColor=f8fafc)
-
 ## ✨ Features
 
 - **Live Community Feed**: Real-time access to help requests with category filtering and urgency levels.
@@ -79,6 +77,3 @@ Helplytics follows a **Premium, State-of-the-Art** design philosophy:
 - **Consistency**: Unified component library using predefined CSS variables.
 - **Performance**: Optimized rendering and lazy loading for a snappy user experience.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
