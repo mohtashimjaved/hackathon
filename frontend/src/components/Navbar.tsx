@@ -61,25 +61,28 @@ export default function Navbar() {
                   className="user-menu-btn"
                 >
                   <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: '600' }}>{user?.name?.split(' ')[0]}</span>
-                  <div style={{ 
-                    width: '32px', 
-                    height: '32px', 
-                    borderRadius: '50%', 
-                    background: user?.avatar === 'avatar2' ? 'linear-gradient(135deg, #3b82f6, #2dd4bf)' :
-                               user?.avatar === 'avatar3' ? 'linear-gradient(135deg, #f59e0b, #ef4444)' :
-                               user?.avatar === 'avatar4' ? 'linear-gradient(135deg, #10b981, #3b82f6)' :
-                               user?.avatar === 'avatar5' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' :
-                               user?.avatar === 'avatar6' ? 'linear-gradient(135deg, #0f172a, #334155)' :
-                               'linear-gradient(135deg, #6366f1, #a855f7)', 
-                    color: 'white', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    fontWeight: 'bold', 
-                    fontSize: '0.9rem' 
-                  }}>
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </div>
+                  {user?.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name} 
+                      style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.05)', background: 'white' }} 
+                    />
+                  ) : (
+                    <div style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '50%', 
+                      background: 'linear-gradient(135deg, #6366f1, #a855f7)', 
+                      color: 'white', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      fontWeight: 'bold', 
+                      fontSize: '0.9rem' 
+                    }}>
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </button>
                 
                 {showDropdown && (
