@@ -6,6 +6,7 @@ import { HeartHandshake, CheckCircle2, MessageSquare, Clock, Tag, ArrowLeft, Sen
 import { getRequestById, offerHelp, markSolved, addMessage, updateHelpRequest, deleteHelpRequest } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { useDialog } from '@/context/DialogContext';
 import Link from 'next/link';
 
 interface Helper {
@@ -50,6 +51,7 @@ export default function RequestDetail() {
   const router = useRouter();
   const { user, isAuthenticated, refreshUser } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useDialog();
   const id = params.id as string;
 
   const [request, setRequest] = useState<RequestData | null>(null);
@@ -161,7 +163,14 @@ export default function RequestDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
+    const confirmed = await confirm({
+      title: 'Delete Request?',
+      message: 'Are you sure you want to delete this request? This action cannot be undone and you will lose all progress.',
+      confirmText: 'Delete Permanently',
+      cancelText: 'Keep Request'
+    });
+    
+    if (!confirmed) return;
     
     setIsDeleting(true);
     try {
